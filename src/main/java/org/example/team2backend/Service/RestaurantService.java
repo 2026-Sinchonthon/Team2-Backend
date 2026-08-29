@@ -57,7 +57,7 @@ public class RestaurantService {
         List<Restaurant> restaurants = (school == null)
                 ? restaurantRepository.findPopular(MIN_TOTAL_LIKE_COUNT)
                 : restaurantRepository.findTopRankedBySchool(
-                        school.name(),
+                        school,
                         MIN_TOTAL_LIKE_COUNT
                 );
 
@@ -123,7 +123,7 @@ public class RestaurantService {
 
         for (Object[] row : likeRepository.countBySchoolForRestaurantIds(restaurantIds)) {
             Long restaurantId = (Long) row[0];
-            String school = (String) row[1];
+            School school = (School) row[1];
             Long count = (Long) row[2];
 
             Map<String, Long> counts = schoolLikes.computeIfAbsent(
@@ -131,10 +131,7 @@ public class RestaurantService {
                     id -> emptySchoolLikes()
             );
 
-            // User.school 값 중 School enum에 없는 값이 들어올 수 있습니다.
-            // 그런 값은 집계에서 제외해 응답 형태를 학교 Enum으로 고정합니다.
-            School.from(school)
-                    .ifPresent(matched -> counts.put(matched.name(), count));
+            counts.put(school.name(), count);
         }
 
         return schoolLikes;

@@ -1,6 +1,7 @@
 package org.example.team2backend.repository;
 
 import org.example.team2backend.entity.Restaurant;
+import org.example.team2backend.entity.School;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -61,7 +62,7 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
             order by count(l) desc, r.id asc
             """)
     List<Restaurant> findTopRankedBySchool(
-            @Param("school") String school,
+            @Param("school") School school,
             @Param("minTotalLikeCount") long minTotalLikeCount
     );
 }

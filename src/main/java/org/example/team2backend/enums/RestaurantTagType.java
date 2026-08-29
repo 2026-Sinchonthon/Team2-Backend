@@ -53,7 +53,7 @@ public enum RestaurantTagType {
      * Jackson이 요청 바디의 한글 문구를 역직렬화할 때 사용합니다.
      *
      * <p>정해진 세 문구가 아니면 요청 단계에서 바로 400으로 이어지도록
-     * 예외를 던집니다({@code RestaurantExceptionHandler}가 처리).
+     * 예외를 던집니다({@code GlobalExceptionHandler}가 처리).
      */
     @JsonCreator
     public static RestaurantTagType fromJson(String label) {
