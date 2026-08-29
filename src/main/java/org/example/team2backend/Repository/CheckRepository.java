@@ -22,6 +22,17 @@ public interface CheckRepository extends JpaRepository<Check, Long> {
             Restaurant restaurant
     );
 
+    @Query("""
+            select l
+            from Check l
+            join fetch l.restaurant
+            where l.user.id = :userId
+            order by l.createdAt desc
+            """)
+    List<Check> findByUserIdWithRestaurantOrderByCreatedAtDesc(
+            @Param("userId") Long userId
+    );
+
     /**
      * 여러 맛집의 전체 완료 수를 한 번에 조회합니다.
      *

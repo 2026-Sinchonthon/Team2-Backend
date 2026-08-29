@@ -1,6 +1,7 @@
 package org.example.team2backend.service;
 
 import org.example.team2backend.dto.CheckResponse;
+import org.example.team2backend.dto.MyCheckedRestaurantResponse;
 import org.example.team2backend.dto.RestaurantDetailResponse;
 import org.example.team2backend.dto.RestaurantListItem;
 import org.example.team2backend.dto.RestaurantListResponse;
@@ -28,6 +29,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -269,6 +271,52 @@ public class RestaurantService {
         checkRepository.delete(check);
 
         return buildCheckResponse(restaurant, false);
+    }
+
+    /**
+     * 마이페이지에서 현재 사용자가 완료/찜한 맛집 목록을 조회합니다.
+     */
+    @Transactional(readOnly = true)
+    public List<MyCheckedRestaurantResponse> getMyCheckedRestaurants(Long userId) {
+
+        findUser(userId);
+
+        List<Check> checks = checkRepository.findByUserIdWithRestaurantOrderByCreatedAtDesc(userId);
+
+        if (checks.isEmpty()) {
+            return List.of();
+        }
+
+        List<Restaurant> restaurants = checks.stream()
+                .map(Check::getRestaurant)
+                .toList();
+
+        Map<Long, List<RestaurantTagType>> tagsByRestaurantId = loadTagsByRestaurantId(
+                restaurants.stream()
+                        .map(Restaurant::getId)
+                        .toList()
+        );
+
+        return restaurants.stream()
+                .map(restaurant -> new MyCheckedRestaurantResponse(
+                        restaurant,
+                        tagsByRestaurantId.getOrDefault(restaurant.getId(), List.of())
+                ))
+                .toList();
+    }
+
+    private Map<Long, List<RestaurantTagType>> loadTagsByRestaurantId(List<Long> restaurantIds) {
+
+        if (restaurantIds.isEmpty()) {
+            return Map.of();
+        }
+
+        return restaurantTagRepository.findByRestaurantIdIn(restaurantIds)
+                .stream()
+                .collect(Collectors.groupingBy(
+                        tag -> tag.getRestaurant().getId(),
+                        Collectors.mapping(RestaurantTag::getTagName, Collectors.toList())
+                ));
     }
 
     /**
