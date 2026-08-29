@@ -6,7 +6,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -23,12 +22,9 @@ public class SignupRequest {
     @Email
     private String email;
 
-    @Schema(description = "비밀번호. 영문 대소문자, 숫자, 특수문자(.!@#&%)를 혼합하여 8~20자", example = "Password1!")
+    // 형식 검증(대소문자/숫자/특수문자 조합, 길이)은 프론트에서 하고 백엔드는 존재 여부만 확인합니다.
+    @Schema(description = "비밀번호", example = "Password1!")
     @NotBlank
-    @Pattern(
-            regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[.!@#&%])[A-Za-z\\d.!@#&%]{8,20}$",
-            message = "비밀번호는 영문 대소문자, 숫자, 특수문자(.!@#&%)를 혼합하여 8~20자로 입력해주세요"
-    )
     private String password;
 
     @Schema(description = "비밀번호 확인. password와 값이 같아야 함", example = "Password1!")
