@@ -19,7 +19,7 @@ jobs:
         image: mysql:8.0
         env:
           MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: sinchonthon_test
+          MYSQL_DATABASE: sinchonthon
           MYSQL_USER: sinchonthon
           MYSQL_PASSWORD: sinchonthon
         ports:

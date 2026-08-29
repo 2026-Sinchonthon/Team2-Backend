@@ -90,8 +90,26 @@ echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
 
 ## 7. 보안 그룹
 
-인바운드: 22(SSH), 8080(앱). 도메인을 연결하고 nginx+HTTPS를 붙이게 되면 80/443도 열고
-`deploy/` 아래에 nginx 설정과 certbot 발급 절차를 추가하세요 (지금은 IP만 있어 생략).
+인바운드: 22(SSH), 80/443(nginx), 8080(앱 — nginx 통해서만 쓸 거면 필수는 아니지만 디버깅용으로 열어둬도 무방).
+
+## 7-1. nginx 리버스 프록시 + HTTPS (도메인: sinchon3ggi.cloud)
+
+```bash
+sudo apt install -y nginx certbot python3-certbot-nginx
+sudo cp deploy/nginx-team2-backend.conf /etc/nginx/sites-available/team2-backend
+sudo ln -s /etc/nginx/sites-available/team2-backend /etc/nginx/sites-enabled/team2-backend
+sudo nginx -t && sudo systemctl reload nginx
+sudo certbot --nginx -d sinchon3ggi.cloud -d www.sinchon3ggi.cloud
+```
+
+- 도메인의 A 레코드가 EC2 탄력적 IP(`13.124.0.95`)를 가리키고 있어야 certbot 발급이 됩니다.
+  (레지스트라 DNS 설정에서 `@`와 `www` 둘 다 그 IP로)
+- certbot이 `nginx-team2-backend.conf`에 SSL 설정을 자동으로 덧붙입니다. 이후 리포의
+  `deploy/nginx-team2-backend.conf`를 다시 덮어쓰면 그 SSL 설정이 날아가니, 이 파일을
+  수정할 땐 서버에 실제 적용된 내용(`/etc/nginx/sites-available/team2-backend`)을 기준으로
+  반영하세요.
+- nginx가 HTTPS를 종료하고 앱엔 HTTP로 넘기므로 `application-prod.yml`의
+  `server.forward-headers-strategy: framework`가 필요합니다 (이미 설정되어 있음).
 
 ## 8. 지금 서버에 어떤 커밋이 떠 있는지 확인하기
 
