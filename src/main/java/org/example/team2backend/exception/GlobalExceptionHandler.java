@@ -6,6 +6,7 @@ import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -38,6 +39,13 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error(GlobalErrorCode.BAD_REQUEST, e.getMessage()));
     }
 
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<ApiResponse<Void>> handleNotFoundException(NotFoundException e) {
+        log.info("[NOT_FOUND] {}", e.getMessage());
+        return ResponseEntity.status(GlobalErrorCode.NOT_FOUND.getStatus())
+                .body(ApiResponse.error(GlobalErrorCode.NOT_FOUND, e.getMessage()));
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse<Map<String, String>>> handleValidationExceptions(MethodArgumentNotValidException e) {
         log.info("[VALIDATION_FAILED] {}", e.getMessage());
@@ -52,6 +60,13 @@ public class GlobalExceptionHandler {
                 .body(new ApiResponse<>(false, fieldErrors,
                         new ApiResponse.ErrorDetail(GlobalErrorCode.VALIDATION_FAILED.name(),
                                 GlobalErrorCode.VALIDATION_FAILED.getMessage())));
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiResponse<Void>> handleHttpMessageNotReadableException(HttpMessageNotReadableException e) {
+        log.info("[BAD_REQUEST] {}", e.getMessage());
+        return ResponseEntity.status(GlobalErrorCode.BAD_REQUEST.getStatus())
+                .body(ApiResponse.error(GlobalErrorCode.BAD_REQUEST, GlobalErrorCode.BAD_REQUEST.getMessage()));
     }
 
     @ExceptionHandler(Exception.class)

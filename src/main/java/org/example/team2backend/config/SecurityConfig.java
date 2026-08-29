@@ -29,14 +29,18 @@ public class SecurityConfig {
     private final CorsConfigurationSource corsConfigurationSource;
 
     // 인증 없이 접근 가능한 경로.
-    // 맛집/좋아요 API는 로그인 연동 전 임시 구현(userId 쿼리 파라미터)이라 아직 여기 포함합니다.
+    // 맛집 조회(GET)는 비로그인도 허용하고, 등록/수정/좋아요는 로그인이 필요합니다.
     private static final String[] PUBLIC_ENDPOINTS = {
             "/api/auth/**",
-            "/api/restaurants/**",
             "/actuator/health",
             "/swagger-ui/**",
             "/swagger-ui.html",
             "/v3/api-docs/**",
+    };
+
+    private static final String[] PUBLIC_GET_ENDPOINTS = {
+            "/api/restaurants",
+            "/api/restaurants/**",
     };
 
     // Boot가 Filter 빈을 보면 서블릿 필터로 자동 등록하는데, addFilterBefore가 같은 인스턴스를
@@ -62,6 +66,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
+                        .requestMatchers(HttpMethod.GET, PUBLIC_GET_ENDPOINTS).permitAll()
                         .anyRequest().authenticated()
                 )
 
