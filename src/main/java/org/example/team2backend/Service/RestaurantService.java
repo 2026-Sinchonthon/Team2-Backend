@@ -4,6 +4,7 @@ import org.example.team2backend.dto.RestaurantRequest;
 import org.example.team2backend.dto.RestaurantResponse;
 import org.example.team2backend.entity.Like;
 import org.example.team2backend.entity.Restaurant;
+import org.example.team2backend.entity.School;
 import org.example.team2backend.entity.User;
 import org.example.team2backend.repository.LikeRepository;
 import org.example.team2backend.repository.RestaurantRepository;
@@ -113,45 +114,15 @@ public class RestaurantService {
 
         Map<String, Long> schoolLikes = new HashMap<>();
 
-        schoolLikes.put(
-                "SOGANG",
-                likeRepository.countByRestaurantAndUserSchool(
-                        restaurant,
-                        "SOGANG"
-                )
-        );
-
-        schoolLikes.put(
-                "YONSEI",
-                likeRepository.countByRestaurantAndUserSchool(
-                        restaurant,
-                        "YONSEI"
-                )
-        );
-
-        schoolLikes.put(
-                "EWHA",
-                likeRepository.countByRestaurantAndUserSchool(
-                        restaurant,
-                        "EWHA"
-                )
-        );
-
-        schoolLikes.put(
-                "HONGIK",
-                likeRepository.countByRestaurantAndUserSchool(
-                        restaurant,
-                        "HONGIK"
-                )
-        );
-
-        schoolLikes.put(
-                "MYONGJI",
-                likeRepository.countByRestaurantAndUserSchool(
-                        restaurant,
-                        "MYONGJI"
-                )
-        );
+        for (School school : School.values()) {
+            schoolLikes.put(
+                    school.name(),
+                    likeRepository.countByRestaurantAndUserSchool(
+                            restaurant,
+                            school
+                    )
+            );
+        }
 
         return new RestaurantResponse(
                 restaurant,
