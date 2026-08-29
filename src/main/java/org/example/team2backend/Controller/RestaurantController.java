@@ -1,5 +1,6 @@
 package org.example.team2backend.controller;
 
+import org.example.team2backend.dto.RestaurantDetailResponse;
 import org.example.team2backend.dto.RestaurantListResponse;
 import org.example.team2backend.dto.RestaurantRequest;
 import org.example.team2backend.dto.RestaurantResponse;
@@ -43,6 +44,25 @@ public class RestaurantController {
 
         return ResponseEntity.ok(
                 restaurantService.getRestaurants(filter)
+        );
+    }
+
+    /**
+     * 맛집 상세 조회
+     *
+     * GET /api/restaurants/{restaurantId}
+     * GET /api/restaurants/{restaurantId}?userId=1
+     *
+     * userId를 넘기면 그 사용자의 좋아요 여부(liked)가 함께 내려갑니다.
+     * ※ 로그인/JWT 연결 전 임시 방식
+     */
+    @GetMapping("/{restaurantId}")
+    public ResponseEntity<RestaurantDetailResponse> getRestaurantDetail(
+            @PathVariable Long restaurantId,
+            @RequestParam(required = false) Long userId
+    ) {
+        return ResponseEntity.ok(
+                restaurantService.getRestaurantDetail(restaurantId, userId)
         );
     }
 

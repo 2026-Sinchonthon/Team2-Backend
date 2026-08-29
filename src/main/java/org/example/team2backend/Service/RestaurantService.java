@@ -1,15 +1,19 @@
 package org.example.team2backend.service;
 
+import org.example.team2backend.dto.RestaurantDetailResponse;
 import org.example.team2backend.dto.RestaurantListItem;
 import org.example.team2backend.dto.RestaurantListResponse;
 import org.example.team2backend.dto.RestaurantRequest;
 import org.example.team2backend.dto.RestaurantResponse;
 import org.example.team2backend.entity.Like;
 import org.example.team2backend.entity.Restaurant;
+import org.example.team2backend.entity.RestaurantTag;
 import org.example.team2backend.entity.User;
 import org.example.team2backend.enums.University;
+import org.example.team2backend.exception.NotFoundException;
 import org.example.team2backend.repository.LikeRepository;
 import org.example.team2backend.repository.RestaurantRepository;
+import org.example.team2backend.repository.RestaurantTagRepository;
 import org.example.team2backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -31,6 +35,7 @@ public class RestaurantService {
     private static final long MIN_TOTAL_LIKE_COUNT = 10;
 
     private final RestaurantRepository restaurantRepository;
+    private final RestaurantTagRepository restaurantTagRepository;
     private final LikeRepository likeRepository;
     private final UserRepository userRepository;
 
@@ -163,17 +168,45 @@ public class RestaurantService {
         return toResponse(restaurant);
     }
 
+    /**
+     * 맛집 상세를 조회합니다.
+     *
+     * <p>userId가 null이면(로그인 전) liked는 항상 false입니다.
+     * 로그인 연동 시 이 인자를 SecurityContext에서 얻도록 바꾸면 됩니다.
+     */
+    @Transactional(readOnly = true)
+    public RestaurantDetailResponse getRestaurantDetail(
+            Long restaurantId,
+            Long userId
+    ) {
+        Restaurant restaurant = findRestaurant(restaurantId);
+
+        List<String> tags = restaurantTagRepository.findByRestaurant(restaurant)
+                .stream()
+                .map(RestaurantTag::getTagName)
+                .toList();
+
+        List<Long> ids = List.of(restaurant.getId());
+
+        boolean liked = userId != null
+                && !likeRepository.findLikedRestaurantIds(userId, ids).isEmpty();
+
+        return new RestaurantDetailResponse(
+                restaurant,
+                tags,
+                loadTotalLikes(ids).getOrDefault(restaurant.getId(), 0L),
+                loadSchoolLikes(ids).getOrDefault(
+                        restaurant.getId(),
+                        emptySchoolLikes()
+                ),
+                liked
+        );
+    }
+
     public void addLike(Long restaurantId, Long userId) {
 
-        Restaurant restaurant = restaurantRepository.findById(restaurantId)
-                .orElseThrow(() ->
-                        new IllegalArgumentException("맛집을 찾을 수 없습니다.")
-                );
-
-        User user = userRepository.findById(userId)
-                .orElseThrow(() ->
-                        new IllegalArgumentException("사용자를 찾을 수 없습니다.")
-                );
+        Restaurant restaurant = findRestaurant(restaurantId);
+        User user = findUser(userId);
 
         if (likeRepository.existsByUserAndRestaurant(user, restaurant)) {
             throw new IllegalArgumentException("이미 좋아요를 눌렀습니다.");
@@ -186,15 +219,8 @@ public class RestaurantService {
 
     public void removeLike(Long restaurantId, Long userId) {
 
-        Restaurant restaurant = restaurantRepository.findById(restaurantId)
-                .orElseThrow(() ->
-                        new IllegalArgumentException("맛집을 찾을 수 없습니다.")
-                );
-
-        User user = userRepository.findById(userId)
-                .orElseThrow(() ->
-                        new IllegalArgumentException("사용자를 찾을 수 없습니다.")
-                );
+        Restaurant restaurant = findRestaurant(restaurantId);
+        User user = findUser(userId);
 
         Like like = likeRepository
                 .findByUserAndRestaurant(user, restaurant)
@@ -203,6 +229,20 @@ public class RestaurantService {
                 );
 
         likeRepository.delete(like);
+    }
+
+    private Restaurant findRestaurant(Long restaurantId) {
+        return restaurantRepository.findById(restaurantId)
+                .orElseThrow(() ->
+                        new NotFoundException("맛집을 찾을 수 없습니다.")
+                );
+    }
+
+    private User findUser(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() ->
+                        new NotFoundException("사용자를 찾을 수 없습니다.")
+                );
     }
 
     /**
