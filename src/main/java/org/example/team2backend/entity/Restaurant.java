@@ -34,6 +34,10 @@ public class Restaurant {
     @Column(length = 1000)
     private String description;
 
+    // S3에 저장된 대표 사진 URL
+    @Column(length = 1000)
+    private String imageUrl;
+
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime createdAt;
@@ -57,5 +61,9 @@ public class Restaurant {
 
     public void updateDescription(String description) {
         this.description = description;
+    }
+
+    public void updateImage(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 }
