@@ -73,6 +73,19 @@ DB_PASSWORD=sinchonthon
 | `EC2_USER` | `ubuntu` |
 | `EC2_SSH_KEY` | EC2 접속용 PEM 프라이빗 키 |
 
+## 4-1. 맛집 사진 업로드 (S3 + IAM 역할)
+
+액세스 키를 EC2에 두지 않고, 인스턴스에 IAM 역할을 붙여서 SDK 기본 자격증명 체인이
+알아서 가져오게 합니다 (DuckSpace와 동일한 방식). **인스턴스를 새로 띄우면 이 role을
+다시 붙여야 하므로 잊지 않도록 여기 적어둡니다.**
+
+- S3 버킷: `team2-backend-images` (ap-northeast-2), 퍼블릭 read-only 정책 적용
+- IAM 역할: `team2-backend-ec2-role` — 이 버킷의 GetObject/PutObject/DeleteObject만 허용
+  (계정 전체 S3FullAccess가 아니라 버킷 하나로 scope를 좁혔습니다)
+- 새 인스턴스에 연결: `aws ec2 associate-iam-instance-profile --instance-id <id> --iam-instance-profile Name=team2-backend-ec2-role`
+- 로컬 개발 PC에는 이 역할이 없으므로, 로컬에서 업로드 API를 테스트하려면 `aws configure`로
+  개인 자격증명을 잡아두거나 이 기능만 건너뛰세요.
+
 ## 5. sudoers 전제
 
 AWS 기본 Ubuntu AMI는 `/etc/sudoers.d/90-cloud-init-users`(cloud-init 기본 생성 파일)에

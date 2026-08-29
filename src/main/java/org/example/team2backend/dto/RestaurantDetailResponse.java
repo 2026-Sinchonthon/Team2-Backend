@@ -27,6 +27,8 @@ public class RestaurantDetailResponse {
 
     private final String description;
 
+    private final String imageUrl;
+
     private final List<RestaurantTagType> tags;
 
     private final long checkCount;
@@ -52,6 +54,7 @@ public class RestaurantDetailResponse {
         this.latitude = restaurant.getLatitude();
         this.longitude = restaurant.getLongitude();
         this.description = restaurant.getDescription();
+        this.imageUrl = restaurant.getImageUrl();
         this.tags = tags;
         this.checkCount = checkCount;
         this.checkCountByUniversity = checkCountByUniversity;

@@ -33,6 +33,11 @@ dependencies {
     implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
+
+    // 맛집 사진 업로드 (S3). Spring Cloud AWS는 Boot 4 대응이 확인되지 않아 순수 SDK를 씁니다.
+    implementation platform('software.amazon.awssdk:bom:2.34.0')
+    implementation 'software.amazon.awssdk:s3'
+
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     annotationProcessor 'org.projectlombok:lombok'

@@ -20,6 +20,8 @@ public class RestaurantResponse {
 
     private Double longitude;
 
+    private String imageUrl;
+
     private long checkCount;
 
     private Map<String, Long> checkCountByUniversity;
@@ -35,6 +37,7 @@ public class RestaurantResponse {
         this.address = restaurant.getAddress();
         this.latitude = restaurant.getLatitude();
         this.longitude = restaurant.getLongitude();
+        this.imageUrl = restaurant.getImageUrl();
         this.checkCount = checkCount;
         this.checkCountByUniversity = checkCountByUniversity;
     }

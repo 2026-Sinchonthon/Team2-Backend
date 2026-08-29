@@ -10,6 +10,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 @Slf4j
 @RestControllerAdvice
@@ -67,6 +68,13 @@ public class GlobalExceptionHandler {
         log.info("[BAD_REQUEST] {}", e.getMessage());
         return ResponseEntity.status(GlobalErrorCode.BAD_REQUEST.getStatus())
                 .body(ApiResponse.error(GlobalErrorCode.BAD_REQUEST, GlobalErrorCode.BAD_REQUEST.getMessage()));
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException e) {
+        log.info("[PAYLOAD_TOO_LARGE] {}", e.getMessage());
+        return ResponseEntity.status(GlobalErrorCode.PAYLOAD_TOO_LARGE.getStatus())
+                .body(ApiResponse.error(GlobalErrorCode.PAYLOAD_TOO_LARGE, GlobalErrorCode.PAYLOAD_TOO_LARGE.getMessage()));
     }
 
     @ExceptionHandler(Exception.class)

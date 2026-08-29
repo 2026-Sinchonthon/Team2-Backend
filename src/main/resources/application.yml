@@ -5,10 +5,24 @@ spring:
     default: local
   jpa:
     open-in-view: false
+  servlet:
+    multipart:
+      # 폰으로 찍은 맛집 사진 기준 여유있게 잡되, 과도한 업로드로 서버가 죽지 않도록 제한합니다.
+      max-file-size: 5MB
+      max-request-size: 6MB
 
 # 배포 시 CORS_ALLOWED_ORIGINS로 덮어쓰세요.
 cors:
   allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173}
+
+# 맛집 사진 저장 (S3). EC2에 붙은 IAM 역할(team2-backend-ec2-role)로 인증하므로
+# 액세스 키는 필요 없습니다 — 로컬에서 이 기능을 쓰려면 AWS 자격증명을 별도로 설정해야 합니다.
+storage:
+  s3:
+    bucket: ${S3_BUCKET:team2-backend-images}
+    region: ${AWS_REGION:ap-northeast-2}
+    # 비우면 https://{bucket}.s3.{region}.amazonaws.com을 씁니다.
+    public-base-url: ${S3_PUBLIC_BASE_URL:}
 
 jwt:
   # 기본값을 두지 않습니다. dev/prod에서 JWT_SECRET을 빠뜨리면 부팅이 실패하도록 합니다.

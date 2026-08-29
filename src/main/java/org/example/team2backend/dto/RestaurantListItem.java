@@ -22,6 +22,8 @@ public class RestaurantListItem {
 
     private final Double longitude;
 
+    private final String imageUrl;
+
     private final long checkCount;
 
     private final Long universityCheckCount;
@@ -35,6 +37,7 @@ public class RestaurantListItem {
         this.name = restaurant.getName();
         this.latitude = restaurant.getLatitude();
         this.longitude = restaurant.getLongitude();
+        this.imageUrl = restaurant.getImageUrl();
         this.checkCount = checkCount;
         this.universityCheckCount = universityCheckCount;
     }

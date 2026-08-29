@@ -3,6 +3,7 @@ package org.example.team2backend.service;
 import org.example.team2backend.dto.CheckResponse;
 import org.example.team2backend.dto.MyCheckedRestaurantResponse;
 import org.example.team2backend.dto.RestaurantDetailResponse;
+import org.example.team2backend.dto.RestaurantImageResponse;
 import org.example.team2backend.dto.RestaurantListItem;
 import org.example.team2backend.dto.RestaurantListResponse;
 import org.example.team2backend.dto.RestaurantRequest;
@@ -20,9 +21,11 @@ import org.example.team2backend.repository.CheckRepository;
 import org.example.team2backend.repository.RestaurantRepository;
 import org.example.team2backend.repository.RestaurantTagRepository;
 import org.example.team2backend.repository.UserRepository;
+import org.example.team2backend.storage.S3ImageUploader;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -45,6 +48,7 @@ public class RestaurantService {
     private final RestaurantTagRepository restaurantTagRepository;
     private final CheckRepository checkRepository;
     private final UserRepository userRepository;
+    private final S3ImageUploader s3ImageUploader;
 
     /**
      * 맛집 목록을 조회합니다.
@@ -261,6 +265,22 @@ public class RestaurantService {
                 restaurant.getId(),
                 saved.stream().map(RestaurantTag::getTagName).toList()
         );
+    }
+
+    /**
+     * 맛집의 대표 사진을 교체합니다. 기존 사진이 있으면 S3에서 지우고 새로 올립니다.
+     */
+    public RestaurantImageResponse updateImage(Long restaurantId, MultipartFile image) {
+        Restaurant restaurant = findRestaurant(restaurantId);
+
+        String previousImageUrl = restaurant.getImageUrl();
+
+        String imageUrl = s3ImageUploader.upload("restaurants/" + restaurantId, image);
+        restaurant.updateImage(imageUrl);
+
+        s3ImageUploader.deleteByUrl(previousImageUrl);
+
+        return new RestaurantImageResponse(restaurant.getId(), imageUrl);
     }
 
     public CheckResponse addCheck(Long restaurantId, Long userId) {

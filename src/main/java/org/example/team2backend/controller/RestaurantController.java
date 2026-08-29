@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.example.team2backend.dto.CheckResponse;
 import org.example.team2backend.dto.RestaurantDetailResponse;
+import org.example.team2backend.dto.RestaurantImageResponse;
 import org.example.team2backend.dto.RestaurantListResponse;
 import org.example.team2backend.dto.RestaurantRequest;
 import org.example.team2backend.dto.RestaurantResponse;
@@ -17,6 +18,7 @@ import org.example.team2backend.service.RestaurantService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @Tag(name = "맛집", description = "맛집 조회, 등록, 태그 수정, 완료 처리를 제공합니다.")
@@ -144,6 +146,24 @@ public class RestaurantController {
     ) {
         return ApiResponse.success(
                 restaurantService.updateTags(restaurantId, request)
+        );
+    }
+
+    /**
+     * 맛집 사진 등록/교체
+     *
+     * POST /api/restaurants/{restaurantId}/image (multipart/form-data, key: image)
+     *
+     * jpg/png/webp만 허용됩니다. 기존 사진이 있으면 교체되고 이전 사진은 S3에서 삭제됩니다.
+     * 로그인이 필요합니다.
+     */
+    @PostMapping("/{restaurantId}/image")
+    public ApiResponse<RestaurantImageResponse> updateImage(
+            @PathVariable Long restaurantId,
+            @RequestParam("image") MultipartFile image
+    ) {
+        return ApiResponse.success(
+                restaurantService.updateImage(restaurantId, image)
         );
     }
 
