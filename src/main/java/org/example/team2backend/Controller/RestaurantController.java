@@ -9,7 +9,6 @@ import org.example.team2backend.dto.RestaurantResponse;
 import org.example.team2backend.dto.RestaurantTagUpdateRequest;
 import org.example.team2backend.dto.RestaurantTagUpdateResponse;
 import org.example.team2backend.auth.AuthUser;
-import org.example.team2backend.entity.School;
 import org.example.team2backend.response.ApiResponse;
 import org.example.team2backend.service.RestaurantService;
 import lombok.RequiredArgsConstructor;
@@ -29,25 +28,13 @@ public class RestaurantController {
      * 전체 보기 (좋아요 10개 이상, 전체 인기순):
      * GET /api/restaurants
      *
-     * 학교별 보기 (전체 좋아요 10개 이상 중 해당 학교가 학교별 좋아요 1위인 맛집, 학교 인기순):
-     * GET /api/restaurants?university=SOGANG
+     * 카테고리별 보기:
+     * GET /api/restaurants?category=한식
      */
     @GetMapping
-    public ApiResponse<RestaurantListResponse> getRestaurants(
-            @RequestParam(required = false) String university
-    ) {
-        School filter = null;
-
-        if (university != null && !university.isBlank()) {
-            // 오타를 전체 목록으로 조용히 넘기면 프론트가 원인을 못 찾으므로 400으로 알립니다.
-            filter = School.from(university)
-                    .orElseThrow(() -> new IllegalArgumentException(
-                            "알 수 없는 학교입니다: " + university
-                    ));
-        }
-
+    public ApiResponse<RestaurantListResponse> getRestaurants() {
         return ApiResponse.success(
-                restaurantService.getRestaurants(filter)
+                restaurantService.getRestaurants()
         );
     }
 
@@ -82,7 +69,7 @@ public class RestaurantController {
             @Valid @RequestBody RestaurantRequest request
     ) {
         return ApiResponse.success(
-                restaurantService.createOrGetRestaurant(request)
+                restaurantService.createRestaurant(request)
         );
     }
 

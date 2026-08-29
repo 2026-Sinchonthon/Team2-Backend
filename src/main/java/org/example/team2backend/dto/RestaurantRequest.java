@@ -23,4 +23,7 @@ public class RestaurantRequest {
 
     @NotNull
     private Double longitude;
+
+    @NotNull
+    private String category;
 }
