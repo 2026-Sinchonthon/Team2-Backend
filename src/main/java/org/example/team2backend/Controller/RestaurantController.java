@@ -2,9 +2,9 @@ package org.example.team2backend.controller;
 
 import org.example.team2backend.dto.RestaurantRequest;
 import org.example.team2backend.dto.RestaurantResponse;
+import org.example.team2backend.response.ApiResponse;
 import org.example.team2backend.service.RestaurantService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,10 +25,10 @@ public class RestaurantController {
      * GET /api/restaurants?category=한식
      */
     @GetMapping
-    public ResponseEntity<List<RestaurantResponse>> getRestaurants(
+    public ApiResponse<List<RestaurantResponse>> getRestaurants(
             @RequestParam(required = false) String category
     ) {
-        return ResponseEntity.ok(
+        return ApiResponse.success(
                 restaurantService.getRestaurants(category)
         );
     }
@@ -40,10 +40,10 @@ public class RestaurantController {
      * POST /api/restaurants
      */
     @PostMapping
-    public ResponseEntity<RestaurantResponse> createRestaurant(
+    public ApiResponse<RestaurantResponse> createRestaurant(
             @RequestBody RestaurantRequest request
     ) {
-        return ResponseEntity.ok(
+        return ApiResponse.success(
                 restaurantService.createOrGetRestaurant(request)
         );
     }
@@ -56,7 +56,7 @@ public class RestaurantController {
      * ※ 로그인/JWT 연결 전 임시 방식
      */
     @PostMapping("/{restaurantId}/likes")
-    public ResponseEntity<Void> addLike(
+    public ApiResponse<Void> addLike(
             @PathVariable Long restaurantId,
             @RequestParam Long userId
     ) {
@@ -65,14 +65,14 @@ public class RestaurantController {
                 userId
         );
 
-        return ResponseEntity.ok().build();
+        return ApiResponse.noContent();
     }
 
     /**
      * 좋아요 취소
      */
     @DeleteMapping("/{restaurantId}/likes")
-    public ResponseEntity<Void> removeLike(
+    public ApiResponse<Void> removeLike(
             @PathVariable Long restaurantId,
             @RequestParam Long userId
     ) {
@@ -81,6 +81,6 @@ public class RestaurantController {
                 userId
         );
 
-        return ResponseEntity.ok().build();
+        return ApiResponse.noContent();
     }
 }
