@@ -3,15 +3,21 @@
 `.github/workflows/deploy.yml`이 성공하려면 EC2 인스턴스에 아래가 미리 준비되어 있어야 합니다.
 인스턴스가 새로 뜨거나 담당자가 없을 때 복구할 수 있도록 여기에 정리합니다.
 
-## 0. 코드 최초 배치 + Docker
+## 0. 인스턴스 최초 부팅 — [`ec2-bootstrap.sh`](./ec2-bootstrap.sh)
+
+Docker, **Java 21**(앱을 systemd + jar로 직접 구동하므로 필수 — 이게 없어서 재시작 루프로
+CPU 크레딧이 고갈된 장애가 실제로 있었습니다), nginx/certbot, 2GiB 스왑까지 여기서 한 번에
+설치합니다. **사람이 SSH로 커맨드를 하나씩 치는 방식은 언젠가 빠뜨리므로**, 새 인스턴스를
+만들 땐 레포가 클론되기 전인 **EC2 콘솔의 User data**에 이 스크립트 내용을 그대로
+붙여넣어 부팅 시 자동 실행되게 하세요.
+
+User data로 못 넣었거나 이미 떠 있는 인스턴스에 나중에 적용해야 한다면, 레포를 클론한 뒤
+수동으로 실행해도 동일합니다 (idempotent라 몇 번을 다시 돌려도 안전합니다):
 
 ```bash
-sudo apt update && sudo apt install -y docker.io docker-compose-plugin
-sudo systemctl enable --now docker
-sudo usermod -aG docker ubuntu   # 이후 재접속 필요
-
 cd /home/ubuntu
 git clone <레포주소> Team2-Backend
+sudo bash Team2-Backend/deploy/ec2-bootstrap.sh
 ```
 
 ## 1. DB - EC2 위 Docker Compose (RDS 아님)
@@ -74,19 +80,15 @@ AWS 기본 Ubuntu AMI는 `/etc/sudoers.d/90-cloud-init-users`(cloud-init 기본 
 `deploy.yml`의 `sudo systemctl restart team2-backend`가 비밀번호 없이 동작합니다. 다른 AMI로
 바꾸면 이 전제가 깨질 수 있습니다.
 
-## 6. 디스크/메모리 (t3.micro라면)
+## 6. 디스크/메모리 (t3.micro/small이라면)
 
 기본 8GiB 디스크로 빠듯할 수 있어 20GiB로 확장을 권장합니다(`growpart` + `resize2fs`).
-메모리도 1GB면 스왑 2GiB 추가를 권장합니다. 빌드는 GitHub Actions 러너에서 하고 EC2에는
-jar만 전달하므로, 서버에서 직접 `./gradlew`를 실행하지 않는 한 큰 여유는 필요 없습니다.
+빌드는 GitHub Actions 러너에서 하고 EC2에는 jar만 전달하므로, 서버에서 직접
+`./gradlew`를 실행하지 않는 한 디스크는 큰 여유가 필요 없습니다.
 
-```bash
-sudo fallocate -l 2G /swapfile
-sudo chmod 600 /swapfile
-sudo mkswap /swapfile
-sudo swapon /swapfile
-echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
-```
+스왑 2GiB는 "권장"이 아니라 **0단계 `ec2-bootstrap.sh`가 항상 만듭니다** — 메모리가
+빠듯한 인스턴스에서 문서에만 적어두면 아무도 실제로 실행하지 않는다는 게 이미 한 번
+드러났으므로, 스크립트에 강제로 넣어뒀습니다. `swapon --show`로 확인하세요.
 
 ## 7. 보안 그룹
 
@@ -94,8 +96,10 @@ echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
 
 ## 7-1. nginx 리버스 프록시 + HTTPS (도메인: sinchon3ggi.cloud)
 
+nginx/certbot 설치 자체는 0단계 `ec2-bootstrap.sh`가 이미 했습니다. 여기선 리포의 설정을
+적용하고 인증서만 발급합니다.
+
 ```bash
-sudo apt install -y nginx certbot python3-certbot-nginx
 sudo cp deploy/nginx-team2-backend.conf /etc/nginx/sites-available/team2-backend
 sudo ln -s /etc/nginx/sites-available/team2-backend /etc/nginx/sites-enabled/team2-backend
 sudo nginx -t && sudo systemctl reload nginx
