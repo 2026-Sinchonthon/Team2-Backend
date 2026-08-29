@@ -20,14 +20,14 @@ public class RestaurantResponse {
 
     private Double longitude;
 
-    private long likeCount;
+    private long checkCount;
 
-    private Map<String, Long> likeCountByUniversity;
+    private Map<String, Long> checkCountByUniversity;
 
     public RestaurantResponse(
             Restaurant restaurant,
-            long likeCount,
-            Map<String, Long> likeCountByUniversity
+            long checkCount,
+            Map<String, Long> checkCountByUniversity
     ) {
         this.restaurantId = restaurant.getId();
         this.kakaoPlaceId = restaurant.getKakaoPlaceId();
@@ -35,7 +35,7 @@ public class RestaurantResponse {
         this.address = restaurant.getAddress();
         this.latitude = restaurant.getLatitude();
         this.longitude = restaurant.getLongitude();
-        this.likeCount = likeCount;
-        this.likeCountByUniversity = likeCountByUniversity;
+        this.checkCount = checkCount;
+        this.checkCountByUniversity = checkCountByUniversity;
     }
 }

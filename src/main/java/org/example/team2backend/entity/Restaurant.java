@@ -18,8 +18,6 @@ public class Restaurant {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String category;
-
     // Kakao 장소 ID
     @Column(unique = true, nullable = false)
     private String kakaoPlaceId;
@@ -48,15 +46,13 @@ public class Restaurant {
             String name,
             String address,
             Double latitude,
-            Double longitude,
-            String category
+            Double longitude
     ) {
         this.kakaoPlaceId = kakaoPlaceId;
         this.name = name;
         this.address = address;
         this.latitude = latitude;
         this.longitude = longitude;
-        this.category = category;
     }
 
     public void updateDescription(String description) {

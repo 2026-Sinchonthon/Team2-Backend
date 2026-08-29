@@ -7,7 +7,7 @@ import java.util.Arrays;
 import java.util.Optional;
 
 /**
- * 맛집에 붙을 수 있는 태그. 이 세 가지로 고정합니다.
+ * 맛집에 붙을 수 있는 태그. 이 다섯 가지로 고정합니다.
  *
  * <p>요청/응답 모두 {@link #label}(한글 문구) 그대로 주고받습니다.
  * JSON 변환은 {@link #label}을 기준으로 하므로, 프론트는 Enum 상수명을
@@ -15,9 +15,11 @@ import java.util.Optional;
  */
 public enum RestaurantTagType {
 
-    MEAL_PROMISE("밥약하기 좋은 맛집"),
-    COST_EFFECTIVE("가성비 좋은 맛집"),
-    GOOD_VIBE("분위기 좋은 맛집");
+    SOLO_MEAL("혼밥"),
+    FREE_PERIOD("공강"),
+    DATE("데이트"),
+    HANGOVER("해장"),
+    MEAL_PROMISE("밥약");
 
     private final String label;
 
@@ -34,7 +36,7 @@ public enum RestaurantTagType {
      * 한글 라벨을 RestaurantTagType으로 변환합니다.
      *
      * <p>서비스 계층에서 요청 바디의 태그 문구를 검증할 때 사용합니다.
-     * 정해진 세 문구가 아니면 예외 대신 빈 Optional을 반환하므로,
+     * 정해진 다섯 문구가 아니면 예외 대신 빈 Optional을 반환하므로,
      * 호출부에서 "잘못된 태그" 처리를 결정할 수 있습니다.
      */
     public static Optional<RestaurantTagType> from(String label) {

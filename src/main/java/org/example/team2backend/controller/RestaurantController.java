@@ -1,7 +1,7 @@
 package org.example.team2backend.controller;
 
 import jakarta.validation.Valid;
-import org.example.team2backend.dto.LikeResponse;
+import org.example.team2backend.dto.CheckResponse;
 import org.example.team2backend.dto.RestaurantDetailResponse;
 import org.example.team2backend.dto.RestaurantListResponse;
 import org.example.team2backend.dto.RestaurantRequest;
@@ -9,6 +9,7 @@ import org.example.team2backend.dto.RestaurantResponse;
 import org.example.team2backend.dto.RestaurantTagUpdateRequest;
 import org.example.team2backend.dto.RestaurantTagUpdateResponse;
 import org.example.team2backend.auth.AuthUser;
+import org.example.team2backend.entity.School;
 import org.example.team2backend.response.ApiResponse;
 import org.example.team2backend.service.RestaurantService;
 import lombok.RequiredArgsConstructor;
@@ -25,16 +26,28 @@ public class RestaurantController {
     /**
      * 맛집 목록 조회
      *
-     * 전체 보기 (좋아요 10개 이상, 전체 인기순):
+     * 전체 보기 (완료 10개 이상, 전체 인기순):
      * GET /api/restaurants
      *
-     * 카테고리별 보기:
-     * GET /api/restaurants?category=한식
+     * 학교별 보기 (전체 완료 10개 이상 중 해당 학교가 학교별 완료 1위인 맛집, 학교 인기순):
+     * GET /api/restaurants?university=SOGANG
      */
     @GetMapping
-    public ApiResponse<RestaurantListResponse> getRestaurants() {
+    public ApiResponse<RestaurantListResponse> getRestaurants(
+            @RequestParam(required = false) String university
+    ) {
+        School filter = null;
+
+        if (university != null && !university.isBlank()) {
+            // 오타를 전체 목록으로 조용히 넘기면 프론트가 원인을 못 찾으므로 400으로 알립니다.
+            filter = School.from(university)
+                    .orElseThrow(() -> new IllegalArgumentException(
+                            "알 수 없는 학교입니다: " + university
+                    ));
+        }
+
         return ApiResponse.success(
-                restaurantService.getRestaurants()
+                restaurantService.getRestaurants(filter)
         );
     }
 
@@ -43,8 +56,8 @@ public class RestaurantController {
      *
      * GET /api/restaurants/{restaurantId}
      *
-     * 로그인 상태면 그 사용자의 좋아요 여부(liked)가 함께 내려갑니다.
-     * 비로그인이면 liked는 항상 false입니다.
+     * 로그인 상태면 그 사용자의 완료 여부(checked)가 함께 내려갑니다.
+     * 비로그인이면 checked는 항상 false입니다.
      */
     @GetMapping("/{restaurantId}")
     public ApiResponse<RestaurantDetailResponse> getRestaurantDetail(
@@ -63,13 +76,16 @@ public class RestaurantController {
      * 신촌세끼에 등록
      *
      * POST /api/restaurants
+     *
+     * 로그인이 필요합니다. 등록 신청이 곧 완료 1개로 집계됩니다.
      */
     @PostMapping
     public ApiResponse<RestaurantResponse> createRestaurant(
-            @Valid @RequestBody RestaurantRequest request
+            @Valid @RequestBody RestaurantRequest request,
+            @AuthenticationPrincipal AuthUser authUser
     ) {
         return ApiResponse.success(
-                restaurantService.createRestaurant(request)
+                restaurantService.createOrGetRestaurant(request, authUser.getUserId())
         );
     }
 
@@ -92,36 +108,36 @@ public class RestaurantController {
     }
 
     /**
-     * 좋아요 추가
+     * 완료 추가
      *
-     * POST /api/restaurants/{restaurantId}/likes
+     * POST /api/restaurants/{restaurantId}/checks
      *
      * 로그인이 필요합니다.
      */
-    @PostMapping("/{restaurantId}/likes")
-    public ApiResponse<LikeResponse> addLike(
+    @PostMapping("/{restaurantId}/checks")
+    public ApiResponse<CheckResponse> addCheck(
             @PathVariable Long restaurantId,
             @AuthenticationPrincipal AuthUser authUser
     ) {
         return ApiResponse.success(
-                restaurantService.addLike(restaurantId, authUser.getUserId())
+                restaurantService.addCheck(restaurantId, authUser.getUserId())
         );
     }
 
     /**
-     * 좋아요 취소
+     * 완료 취소
      *
-     * DELETE /api/restaurants/{restaurantId}/likes
+     * DELETE /api/restaurants/{restaurantId}/checks
      *
      * 로그인이 필요합니다.
      */
-    @DeleteMapping("/{restaurantId}/likes")
-    public ApiResponse<LikeResponse> removeLike(
+    @DeleteMapping("/{restaurantId}/checks")
+    public ApiResponse<CheckResponse> removeCheck(
             @PathVariable Long restaurantId,
             @AuthenticationPrincipal AuthUser authUser
     ) {
         return ApiResponse.success(
-                restaurantService.removeLike(restaurantId, authUser.getUserId())
+                restaurantService.removeCheck(restaurantId, authUser.getUserId())
         );
     }
 }
