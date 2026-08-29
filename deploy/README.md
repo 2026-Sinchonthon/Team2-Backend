@@ -63,6 +63,13 @@ sudo systemctl enable team2-backend   # 배포마다 다시 할 필요 없음 �
 DB_URL=jdbc:mysql://127.0.0.1:3306/sinchonthon?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
 DB_USERNAME=sinchonthon
 DB_PASSWORD=sinchonthon
+
+# 기본값이 없어서 빠뜨리면 부팅 자체가 실패합니다 (application.yml: jwt.secret: ${JWT_SECRET}).
+JWT_SECRET=<32바이트 이상의 랜덤 값>
+
+# 프론트 배포 도메인이 늘어날 때마다 여기 콤마로 추가하고 서비스를 재시작해야 합니다.
+# 기본값(localhost:3000, localhost:5173)만으로는 배포된 프론트에서 CORS가 막힙니다.
+CORS_ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173,https://team2-frontend-seven.vercel.app
 ```
 
 ## 4. GitHub Secrets (Repository → Settings → Secrets and variables → Actions)
