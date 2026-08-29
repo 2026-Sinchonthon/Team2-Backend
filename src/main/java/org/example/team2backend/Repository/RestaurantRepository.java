@@ -1,4 +1,4 @@
-package org.example.team2backend.Repository;
+package org.example.team2backend.repository;
 
 import org.example.team2backend.entity.Restaurant;
 import org.springframework.data.jpa.repository.JpaRepository;

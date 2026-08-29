@@ -20,6 +20,9 @@ repositories {
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    runtimeOnly 'com.mysql:mysql-connector-j'
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     annotationProcessor 'org.projectlombok:lombok'
@@ -31,4 +34,10 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+// 배포 스크립트(systemd ExecStart 등)가 jar 경로를 고정값으로 참조합니다.
+// version이 바뀌어도 파일명이 안 바뀌어야 그 경로들이 조용히 깨지지 않습니다.
+bootJar {
+    archiveFileName = 'app.jar'
 }

@@ -1,4 +1,4 @@
-package org.example.team2backend.Service;
+package org.example.team2backend.service;
 
 import org.example.team2backend.dto.RestaurantRequest;
 import org.example.team2backend.dto.RestaurantResponse;
