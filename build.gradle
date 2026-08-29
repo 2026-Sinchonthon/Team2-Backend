@@ -1,0 +1,46 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '4.1.1'
+    id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'org.example'
+version = '0.0.1-SNAPSHOT'
+description = 'Team2-Backend'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    runtimeOnly 'com.mysql:mysql-connector-j'
+
+    // Swagger (springdoc)
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.1'
+    compileOnly 'org.projectlombok:lombok'
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+    annotationProcessor 'org.projectlombok:lombok'
+    testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
+    testCompileOnly 'org.projectlombok:lombok'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testAnnotationProcessor 'org.projectlombok:lombok'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+// 배포 스크립트(systemd ExecStart 등)가 jar 경로를 고정값으로 참조합니다.
+// version이 바뀌어도 파일명이 안 바뀌어야 그 경로들이 조용히 깨지지 않습니다.
+bootJar {
+    archiveFileName = 'app.jar'
+}

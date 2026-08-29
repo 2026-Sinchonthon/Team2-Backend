@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: Team2-Backend
+  profiles:
+    default: local
+  jpa:
+    open-in-view: false
+
+# 배포 시 CORS_ALLOWED_ORIGINS로 덮어쓰세요.
+cors:
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173}

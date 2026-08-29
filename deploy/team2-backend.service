@@ -1,0 +1,17 @@
+# EC2 배포 경로: /etc/systemd/system/team2-backend.service
+# 설치: sudo cp deploy/team2-backend.service /etc/systemd/system/ && sudo systemctl daemon-reload && sudo systemctl enable team2-backend
+[Unit]
+Description=Team2-Backend Spring Boot App
+After=network.target docker.service
+
+[Service]
+User=ubuntu
+WorkingDirectory=/home/ubuntu/Team2-Backend
+EnvironmentFile=/etc/team2-backend/app.env
+ExecStart=/usr/bin/java -jar /home/ubuntu/Team2-Backend/build/libs/app.jar --spring.profiles.active=prod
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=60
+
+[Install]
+WantedBy=multi-user.target
