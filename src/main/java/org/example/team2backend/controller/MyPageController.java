@@ -5,8 +5,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.example.team2backend.auth.AuthUser;
 import org.example.team2backend.dto.MyCheckedRestaurantResponse;
+import org.example.team2backend.dto.MyProfileResponse;
 import org.example.team2backend.response.ApiResponse;
 import org.example.team2backend.service.RestaurantService;
+import org.example.team2backend.service.UserService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,6 +23,29 @@ import java.util.List;
 public class MyPageController {
 
     private final RestaurantService restaurantService;
+    private final UserService userService;
+
+    /**
+     * 내 정보 - 이름과 학교
+     *
+     * GET /api/mypage
+     */
+    @Operation(
+            summary = "내 정보 조회",
+            description = """
+                    현재 사용자가 회원가입 때 입력한 이름과 학교를 조회합니다.
+                    로그인이 필요하며 토큰이 없거나 올바르지 않으면 401(UNAUTHORIZED)입니다.
+                    사용자를 찾을 수 없으면 404(NOT_FOUND)입니다.
+                    """
+    )
+    @GetMapping
+    public ApiResponse<MyProfileResponse> getMyProfile(
+            @AuthenticationPrincipal AuthUser authUser
+    ) {
+        return ApiResponse.success(
+                userService.getMyProfile(authUser.getUserId())
+        );
+    }
 
     /**
      * 내 활동 - 내가 완료/찜한 맛집 목록
