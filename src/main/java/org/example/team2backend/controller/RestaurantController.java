@@ -76,13 +76,16 @@ public class RestaurantController {
      * 신촌세끼에 등록
      *
      * POST /api/restaurants
+     *
+     * 로그인이 필요합니다. 등록 신청이 곧 완료 1개로 집계됩니다.
      */
     @PostMapping
     public ApiResponse<RestaurantResponse> createRestaurant(
-            @Valid @RequestBody RestaurantRequest request
+            @Valid @RequestBody RestaurantRequest request,
+            @AuthenticationPrincipal AuthUser authUser
     ) {
         return ApiResponse.success(
-                restaurantService.createOrGetRestaurant(request)
+                restaurantService.createOrGetRestaurant(request, authUser.getUserId())
         );
     }
 

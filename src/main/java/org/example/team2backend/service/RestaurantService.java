@@ -150,8 +150,19 @@ public class RestaurantService {
         return counts;
     }
 
+    /**
+     * 카카오 검색 결과의 맛집을 등록합니다. 이미 등록된 맛집이면 그대로 재사용합니다.
+     *
+     * <p>등록 신청 자체가 완료 1개로 집계됩니다. 서로 다른 사용자가 같은 맛집을
+     * 신청할수록 완료 수가 쌓여 목록 노출 기준({@value #MIN_TOTAL_CHECK_COUNT}개)을
+     * 넘게 됩니다.
+     *
+     * <p>이미 완료를 눌러둔 맛집을 다시 신청해도 예외를 던지지 않고 조용히 넘어갑니다.
+     * 재신청을 막을 이유가 없기 때문입니다.
+     */
     public RestaurantResponse createOrGetRestaurant(
-            RestaurantRequest request
+            RestaurantRequest request,
+            Long userId
     ) {
 
         Restaurant restaurant =
@@ -168,6 +179,15 @@ public class RestaurantService {
                                         )
                                 )
                         );
+
+        User user = findUser(userId);
+
+        if (!checkRepository.existsByUserAndRestaurant(user, restaurant)) {
+            checkRepository.save(new Check(user, restaurant));
+        }
+
+        // 응답 집계가 방금 저장한 완료까지 반영하도록 먼저 반영합니다.
+        checkRepository.flush();
 
         return toResponse(restaurant);
     }
