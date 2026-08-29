@@ -18,6 +18,8 @@ public class RestaurantListItem {
 
     private final String name;
 
+    private final String address;
+
     private final Double latitude;
 
     private final Double longitude;
@@ -35,6 +37,7 @@ public class RestaurantListItem {
     ) {
         this.restaurantId = restaurant.getId();
         this.name = restaurant.getName();
+        this.address = restaurant.getAddress();
         this.latitude = restaurant.getLatitude();
         this.longitude = restaurant.getLongitude();
         this.imageUrl = restaurant.getImageUrl();
