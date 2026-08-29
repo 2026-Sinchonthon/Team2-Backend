@@ -12,6 +12,7 @@ import org.example.team2backend.entity.Like;
 import org.example.team2backend.entity.Restaurant;
 import org.example.team2backend.entity.RestaurantTag;
 import org.example.team2backend.entity.User;
+import org.example.team2backend.enums.RestaurantTagType;
 import org.example.team2backend.enums.University;
 import org.example.team2backend.exception.NotFoundException;
 import org.example.team2backend.repository.LikeRepository;
@@ -185,7 +186,7 @@ public class RestaurantService {
     ) {
         Restaurant restaurant = findRestaurant(restaurantId);
 
-        List<String> tags = restaurantTagRepository.findByRestaurant(restaurant)
+        List<RestaurantTagType> tags = restaurantTagRepository.findByRestaurant(restaurant)
                 .stream()
                 .map(RestaurantTag::getTagName)
                 .toList();
@@ -210,8 +211,9 @@ public class RestaurantService {
     /**
      * 맛집의 태그를 교체합니다. 기존 태그를 모두 지우고 요청받은 태그로 새로 넣습니다.
      *
-     * <p>중복 태그는 (restaurant_id, tag_name) UNIQUE 제약에 걸리므로 미리 걸러내고,
-     * 앞뒤 공백은 제거합니다. 빈 문자열은 태그로 저장하지 않습니다.
+     * <p>태그는 {@link RestaurantTagType} 세 가지로 고정되어 있고, 요청 역직렬화
+     * 단계에서 이미 검증되었습니다. 여기서는 중복만 제거합니다
+     * (restaurant_id, tag_name) UNIQUE 제약에 걸리지 않도록).
      */
     public RestaurantTagUpdateResponse updateTags(
             Long restaurantId,
@@ -219,12 +221,10 @@ public class RestaurantService {
     ) {
         Restaurant restaurant = findRestaurant(restaurantId);
 
-        List<String> tags = (request.getTags() == null)
+        List<RestaurantTagType> tags = (request.getTags() == null)
                 ? List.of()
                 : request.getTags().stream()
                         .filter(Objects::nonNull)
-                        .map(String::trim)
-                        .filter(tag -> !tag.isEmpty())
                         .distinct()
                         .toList();
 

@@ -1,6 +1,7 @@
 package org.example.team2backend.dto;
 
 import lombok.Getter;
+import org.example.team2backend.enums.RestaurantTagType;
 
 import java.util.List;
 
@@ -12,11 +13,11 @@ public class RestaurantTagUpdateResponse {
 
     private final Long restaurantId;
 
-    private final List<String> tags;
+    private final List<RestaurantTagType> tags;
 
     private final String message;
 
-    public RestaurantTagUpdateResponse(Long restaurantId, List<String> tags) {
+    public RestaurantTagUpdateResponse(Long restaurantId, List<RestaurantTagType> tags) {
         this.restaurantId = restaurantId;
         this.tags = tags;
         this.message = "맛집 정보가 수정되었습니다.";

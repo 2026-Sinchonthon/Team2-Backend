@@ -1,6 +1,7 @@
 package org.example.team2backend.dto;
 
 import org.example.team2backend.entity.Restaurant;
+import org.example.team2backend.enums.RestaurantTagType;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
@@ -26,7 +27,7 @@ public class RestaurantDetailResponse {
 
     private final String description;
 
-    private final List<String> tags;
+    private final List<RestaurantTagType> tags;
 
     private final long likeCount;
 
@@ -40,7 +41,7 @@ public class RestaurantDetailResponse {
 
     public RestaurantDetailResponse(
             Restaurant restaurant,
-            List<String> tags,
+            List<RestaurantTagType> tags,
             long likeCount,
             Map<String, Long> likeCountByUniversity,
             boolean liked
