@@ -1,5 +1,6 @@
 package org.example.team2backend.controller;
 
+import org.example.team2backend.dto.LikeResponse;
 import org.example.team2backend.dto.RestaurantDetailResponse;
 import org.example.team2backend.dto.RestaurantListResponse;
 import org.example.team2backend.dto.RestaurantRequest;
@@ -109,31 +110,27 @@ public class RestaurantController {
      * ※ 로그인/JWT 연결 전 임시 방식
      */
     @PostMapping("/{restaurantId}/likes")
-    public ResponseEntity<Void> addLike(
+    public ResponseEntity<LikeResponse> addLike(
             @PathVariable Long restaurantId,
             @RequestParam Long userId
     ) {
-        restaurantService.addLike(
-                restaurantId,
-                userId
+        return ResponseEntity.ok(
+                restaurantService.addLike(restaurantId, userId)
         );
-
-        return ResponseEntity.ok().build();
     }
 
     /**
      * 좋아요 취소
+     *
+     * DELETE /api/restaurants/{restaurantId}/likes?userId=1
      */
     @DeleteMapping("/{restaurantId}/likes")
-    public ResponseEntity<Void> removeLike(
+    public ResponseEntity<LikeResponse> removeLike(
             @PathVariable Long restaurantId,
             @RequestParam Long userId
     ) {
-        restaurantService.removeLike(
-                restaurantId,
-                userId
+        return ResponseEntity.ok(
+                restaurantService.removeLike(restaurantId, userId)
         );
-
-        return ResponseEntity.ok().build();
     }
 }

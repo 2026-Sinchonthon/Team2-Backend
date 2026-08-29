@@ -1,5 +1,6 @@
 package org.example.team2backend.service;
 
+import org.example.team2backend.dto.LikeResponse;
 import org.example.team2backend.dto.RestaurantDetailResponse;
 import org.example.team2backend.dto.RestaurantListItem;
 import org.example.team2backend.dto.RestaurantListResponse;
@@ -244,7 +245,7 @@ public class RestaurantService {
         );
     }
 
-    public void addLike(Long restaurantId, Long userId) {
+    public LikeResponse addLike(Long restaurantId, Long userId) {
 
         Restaurant restaurant = findRestaurant(restaurantId);
         User user = findUser(userId);
@@ -253,12 +254,12 @@ public class RestaurantService {
             throw new IllegalArgumentException("이미 좋아요를 눌렀습니다.");
         }
 
-        Like like = new Like(user, restaurant);
+        likeRepository.save(new Like(user, restaurant));
 
-        likeRepository.save(like);
+        return buildLikeResponse(restaurant, true);
     }
 
-    public void removeLike(Long restaurantId, Long userId) {
+    public LikeResponse removeLike(Long restaurantId, Long userId) {
 
         Restaurant restaurant = findRestaurant(restaurantId);
         User user = findUser(userId);
@@ -270,6 +271,31 @@ public class RestaurantService {
                 );
 
         likeRepository.delete(like);
+
+        return buildLikeResponse(restaurant, false);
+    }
+
+    /**
+     * 좋아요 변경 직후의 집계를 담아 응답을 만듭니다.
+     *
+     * <p>save/delete는 트랜잭션 커밋 시점에 반영되므로, 집계 쿼리가 변경 전 값을
+     * 읽지 않도록 먼저 flush합니다.
+     */
+    private LikeResponse buildLikeResponse(Restaurant restaurant, boolean liked) {
+
+        likeRepository.flush();
+
+        List<Long> ids = List.of(restaurant.getId());
+
+        return new LikeResponse(
+                restaurant.getId(),
+                liked,
+                loadTotalLikes(ids).getOrDefault(restaurant.getId(), 0L),
+                loadSchoolLikes(ids).getOrDefault(
+                        restaurant.getId(),
+                        emptySchoolLikes()
+                )
+        );
     }
 
     private Restaurant findRestaurant(Long restaurantId) {
