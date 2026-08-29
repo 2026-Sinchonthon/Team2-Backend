@@ -1,5 +1,6 @@
 package org.example.team2backend.controller;
 
+import jakarta.validation.Valid;
 import org.example.team2backend.dto.LikeResponse;
 import org.example.team2backend.dto.RestaurantDetailResponse;
 import org.example.team2backend.dto.RestaurantListResponse;
@@ -28,7 +29,7 @@ public class RestaurantController {
      * 전체 보기 (좋아요 10개 이상, 전체 인기순):
      * GET /api/restaurants
      *
-     * 학교별 보기 (해당 학교 좋아요 1개 이상, 학교 인기순):
+     * 학교별 보기 (전체 좋아요 10개 이상 중 해당 학교가 학교별 좋아요 1위인 맛집, 학교 인기순):
      * GET /api/restaurants?university=SOGANG
      */
     @GetMapping
@@ -78,7 +79,7 @@ public class RestaurantController {
      */
     @PostMapping
     public ApiResponse<RestaurantResponse> createRestaurant(
-            @RequestBody RestaurantRequest request
+            @Valid @RequestBody RestaurantRequest request
     ) {
         return ApiResponse.success(
                 restaurantService.createOrGetRestaurant(request)

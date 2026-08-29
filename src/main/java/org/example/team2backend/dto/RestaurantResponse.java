@@ -8,7 +8,7 @@ import java.util.Map;
 @Getter
 public class RestaurantResponse {
 
-    private Long id;
+    private Long restaurantId;
 
     private String kakaoPlaceId;
 
@@ -20,22 +20,22 @@ public class RestaurantResponse {
 
     private Double longitude;
 
-    private long totalLikeCount;
+    private long likeCount;
 
-    private Map<String, Long> schoolLikes;
+    private Map<String, Long> likeCountByUniversity;
 
     public RestaurantResponse(
             Restaurant restaurant,
-            long totalLikeCount,
-            Map<String, Long> schoolLikes
+            long likeCount,
+            Map<String, Long> likeCountByUniversity
     ) {
-        this.id = restaurant.getId();
+        this.restaurantId = restaurant.getId();
         this.kakaoPlaceId = restaurant.getKakaoPlaceId();
         this.name = restaurant.getName();
         this.address = restaurant.getAddress();
         this.latitude = restaurant.getLatitude();
         this.longitude = restaurant.getLongitude();
-        this.totalLikeCount = totalLikeCount;
-        this.schoolLikes = schoolLikes;
+        this.likeCount = likeCount;
+        this.likeCountByUniversity = likeCountByUniversity;
     }
 }

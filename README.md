@@ -43,14 +43,15 @@
 * 주소
 * 위도
 * 경도
-* 카테고리
 * Kakao Place ID
+* 태그
+* 좋아요 수
 
-카테고리를 지정하여 특정 종류의 맛집만 조회할 수 있습니다.
+전체 인기 맛집 또는 학교별 인기 맛집을 조회할 수 있습니다.
 
 ```http
 GET /api/restaurants
-GET /api/restaurants?category=한식
+GET /api/restaurants?university=SOGANG
 ```
 
 > **프론트엔드:** Kakao 지도 Web API를 이용한 지도 UI 및 음식점 검색
@@ -74,8 +75,7 @@ POST /api/restaurants
   "name": "예시 식당",
   "address": "서울특별시 서대문구 ...",
   "latitude": 37.559,
-  "longitude": 126.936,
-  "category": "한식"
+  "longitude": 126.936
 }
 ```
 
@@ -105,16 +105,16 @@ Restaurant
 #### 좋아요 추가
 
 ```http
-POST /api/restaurants/{restaurantId}/likes?userId={userId}
+POST /api/restaurants/{restaurantId}/likes
 ```
 
 #### 좋아요 취소
 
 ```http
-DELETE /api/restaurants/{restaurantId}/likes?userId={userId}
+DELETE /api/restaurants/{restaurantId}/likes
 ```
 
-현재는 로그인/JWT 인증이 연결되기 전 단계이므로 `userId`를 요청 파라미터로 전달받습니다.
+좋아요 추가와 취소는 JWT 인증이 필요합니다.
 
 ---
 
@@ -134,15 +134,14 @@ DELETE /api/restaurants/{restaurantId}/likes?userId={userId}
 
 ```json
 {
-  "id": 1,
+  "restaurantId": 1,
   "kakaoPlaceId": "123456789",
   "name": "예시 식당",
   "address": "서울특별시 서대문구 ...",
   "latitude": 37.559,
   "longitude": 126.936,
-  "category": "한식",
-  "totalLikeCount": 10,
-  "schoolLikes": {
+  "likeCount": 10,
+  "likeCountByUniversity": {
     "SOGANG": 2,
     "YONSEI": 4,
     "EWHA": 1,
@@ -161,10 +160,12 @@ DELETE /api/restaurants/{restaurantId}/likes?userId={userId}
 | Method   | Endpoint                                                | 설명                |
 | -------- | ------------------------------------------------------- | ----------------- |
 | `GET`    | `/api/restaurants`                                      | 전체 맛집 조회          |
-| `GET`    | `/api/restaurants?category={category}`                  | 카테고리별 맛집 조회       |
+| `GET`    | `/api/restaurants?university={university}`              | 학교별 인기 맛집 조회      |
+| `GET`    | `/api/restaurants/{restaurantId}`                       | 맛집 상세 조회          |
 | `POST`   | `/api/restaurants`                                      | 맛집 등록 또는 기존 맛집 조회 |
-| `POST`   | `/api/restaurants/{restaurantId}/likes?userId={userId}` | 좋아요 추가            |
-| `DELETE` | `/api/restaurants/{restaurantId}/likes?userId={userId}` | 좋아요 취소            |
+| `PATCH`  | `/api/restaurants/{restaurantId}`                       | 맛집 태그 수정          |
+| `POST`   | `/api/restaurants/{restaurantId}/likes`                 | 좋아요 추가            |
+| `DELETE` | `/api/restaurants/{restaurantId}/likes`                 | 좋아요 취소            |
 
 ---
 
@@ -218,7 +219,9 @@ Restaurant
 ├── address
 ├── latitude
 ├── longitude
-└── category
+├── description
+├── createdAt
+└── updatedAt
 ```
 
 `kakaoPlaceId`에는 Unique Constraint가 적용되어 있습니다.
