@@ -11,9 +11,9 @@ import org.example.team2backend.dto.RestaurantTagUpdateResponse;
 import org.example.team2backend.entity.Like;
 import org.example.team2backend.entity.Restaurant;
 import org.example.team2backend.entity.RestaurantTag;
+import org.example.team2backend.entity.School;
 import org.example.team2backend.entity.User;
 import org.example.team2backend.enums.RestaurantTagType;
-import org.example.team2backend.enums.University;
 import org.example.team2backend.exception.NotFoundException;
 import org.example.team2backend.repository.LikeRepository;
 import org.example.team2backend.repository.RestaurantRepository;
@@ -52,19 +52,19 @@ public class RestaurantService {
      * 맛집만 해당 학교 좋아요 순으로 반환합니다. 필터와 정렬은 모두 DB에서 처리합니다.
      */
     @Transactional(readOnly = true)
-    public RestaurantListResponse getRestaurants(University university) {
+    public RestaurantListResponse getRestaurants(School school) {
 
-        List<Restaurant> restaurants = (university == null)
+        List<Restaurant> restaurants = (school == null)
                 ? restaurantRepository.findPopular(MIN_TOTAL_LIKE_COUNT)
                 : restaurantRepository.findTopRankedBySchool(
-                        university.name(),
+                        school.name(),
                         MIN_TOTAL_LIKE_COUNT
                 );
 
         if (restaurants.isEmpty()) {
-            return (university == null)
+            return (school == null)
                     ? RestaurantListResponse.of(List.of())
-                    : RestaurantListResponse.ofUniversity(university, List.of());
+                    : RestaurantListResponse.ofUniversity(school, List.of());
         }
 
         // 맛집마다 카운트 쿼리를 날리지 않도록 좋아요 집계를 한 번에 읽어옵니다.
@@ -74,7 +74,7 @@ public class RestaurantService {
 
         Map<Long, Long> totalLikes = loadTotalLikes(restaurantIds);
 
-        if (university == null) {
+        if (school == null) {
             List<RestaurantListItem> items = restaurants.stream()
                     .map(restaurant -> RestaurantListItem.of(
                             restaurant,
@@ -93,11 +93,11 @@ public class RestaurantService {
                         totalLikes.getOrDefault(restaurant.getId(), 0L),
                         schoolLikes
                                 .getOrDefault(restaurant.getId(), emptySchoolLikes())
-                                .getOrDefault(university.name(), 0L)
+                                .getOrDefault(school.name(), 0L)
                 ))
                 .toList();
 
-        return RestaurantListResponse.ofUniversity(university, items);
+        return RestaurantListResponse.ofUniversity(school, items);
     }
 
     /**
@@ -131,10 +131,10 @@ public class RestaurantService {
                     id -> emptySchoolLikes()
             );
 
-            // User.school은 자유 문자열이라 University에 없는 값이 들어올 수 있습니다.
+            // User.school 값 중 School enum에 없는 값이 들어올 수 있습니다.
             // 그런 값은 집계에서 제외해 응답 형태를 학교 Enum으로 고정합니다.
-            University.from(school)
-                    .ifPresent(university -> counts.put(university.name(), count));
+            School.from(school)
+                    .ifPresent(matched -> counts.put(matched.name(), count));
         }
 
         return schoolLikes;
@@ -144,8 +144,8 @@ public class RestaurantService {
 
         Map<String, Long> counts = new LinkedHashMap<>();
 
-        for (University university : University.values()) {
-            counts.put(university.name(), 0L);
+        for (School school : School.values()) {
+            counts.put(school.name(), 0L);
         }
 
         return counts;
@@ -177,7 +177,6 @@ public class RestaurantService {
      * 맛집 상세를 조회합니다.
      *
      * <p>userId가 null이면(로그인 전) liked는 항상 false입니다.
-     * 로그인 연동 시 이 인자를 SecurityContext에서 얻도록 바꾸면 됩니다.
      */
     @Transactional(readOnly = true)
     public RestaurantDetailResponse getRestaurantDetail(

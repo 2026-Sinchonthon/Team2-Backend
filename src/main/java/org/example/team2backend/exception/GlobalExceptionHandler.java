@@ -38,6 +38,13 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error(GlobalErrorCode.BAD_REQUEST, e.getMessage()));
     }
 
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<ApiResponse<Void>> handleNotFoundException(NotFoundException e) {
+        log.info("[NOT_FOUND] {}", e.getMessage());
+        return ResponseEntity.status(GlobalErrorCode.NOT_FOUND.getStatus())
+                .body(ApiResponse.error(GlobalErrorCode.NOT_FOUND, e.getMessage()));
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse<Map<String, String>>> handleValidationExceptions(MethodArgumentNotValidException e) {
         log.info("[VALIDATION_FAILED] {}", e.getMessage());

@@ -7,10 +7,12 @@ import org.example.team2backend.dto.RestaurantRequest;
 import org.example.team2backend.dto.RestaurantResponse;
 import org.example.team2backend.dto.RestaurantTagUpdateRequest;
 import org.example.team2backend.dto.RestaurantTagUpdateResponse;
-import org.example.team2backend.enums.University;
+import org.example.team2backend.auth.AuthUser;
+import org.example.team2backend.entity.School;
 import org.example.team2backend.response.ApiResponse;
 import org.example.team2backend.service.RestaurantService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -33,11 +35,11 @@ public class RestaurantController {
     public ApiResponse<RestaurantListResponse> getRestaurants(
             @RequestParam(required = false) String university
     ) {
-        University filter = null;
+        School filter = null;
 
         if (university != null && !university.isBlank()) {
             // 오타를 전체 목록으로 조용히 넘기면 프론트가 원인을 못 찾으므로 400으로 알립니다.
-            filter = University.from(university)
+            filter = School.from(university)
                     .orElseThrow(() -> new IllegalArgumentException(
                             "알 수 없는 학교입니다: " + university
                     ));
@@ -52,16 +54,17 @@ public class RestaurantController {
      * 맛집 상세 조회
      *
      * GET /api/restaurants/{restaurantId}
-     * GET /api/restaurants/{restaurantId}?userId=1
      *
-     * userId를 넘기면 그 사용자의 좋아요 여부(liked)가 함께 내려갑니다.
-     * ※ 로그인/JWT 연결 전 임시 방식
+     * 로그인 상태면 그 사용자의 좋아요 여부(liked)가 함께 내려갑니다.
+     * 비로그인이면 liked는 항상 false입니다.
      */
     @GetMapping("/{restaurantId}")
     public ApiResponse<RestaurantDetailResponse> getRestaurantDetail(
             @PathVariable Long restaurantId,
-            @RequestParam(required = false) Long userId
+            @AuthenticationPrincipal AuthUser authUser
     ) {
+        Long userId = (authUser == null) ? null : authUser.getUserId();
+
         return ApiResponse.success(
                 restaurantService.getRestaurantDetail(restaurantId, userId)
         );
@@ -103,32 +106,34 @@ public class RestaurantController {
     /**
      * 좋아요 추가
      *
-     * POST /api/restaurants/{restaurantId}/likes?userId=1
+     * POST /api/restaurants/{restaurantId}/likes
      *
-     * ※ 로그인/JWT 연결 전 임시 방식
+     * 로그인이 필요합니다.
      */
     @PostMapping("/{restaurantId}/likes")
     public ApiResponse<LikeResponse> addLike(
             @PathVariable Long restaurantId,
-            @RequestParam Long userId
+            @AuthenticationPrincipal AuthUser authUser
     ) {
         return ApiResponse.success(
-                restaurantService.addLike(restaurantId, userId)
+                restaurantService.addLike(restaurantId, authUser.getUserId())
         );
     }
 
     /**
      * 좋아요 취소
      *
-     * DELETE /api/restaurants/{restaurantId}/likes?userId=1
+     * DELETE /api/restaurants/{restaurantId}/likes
+     *
+     * 로그인이 필요합니다.
      */
     @DeleteMapping("/{restaurantId}/likes")
     public ApiResponse<LikeResponse> removeLike(
             @PathVariable Long restaurantId,
-            @RequestParam Long userId
+            @AuthenticationPrincipal AuthUser authUser
     ) {
         return ApiResponse.success(
-                restaurantService.removeLike(restaurantId, userId)
+                restaurantService.removeLike(restaurantId, authUser.getUserId())
         );
     }
 }

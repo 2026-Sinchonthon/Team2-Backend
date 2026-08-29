@@ -1,7 +1,7 @@
 package org.example.team2backend.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import org.example.team2backend.enums.University;
+import org.example.team2backend.entity.School;
 import lombok.Getter;
 
 import java.util.List;
@@ -33,9 +33,9 @@ public class RestaurantListResponse {
     }
 
     public static RestaurantListResponse ofUniversity(
-            University university,
+            School school,
             List<RestaurantListItem> restaurants
     ) {
-        return new RestaurantListResponse(university.name(), restaurants);
+        return new RestaurantListResponse(school.name(), restaurants);
     }
 }
