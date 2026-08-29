@@ -5,6 +5,7 @@ import org.example.team2backend.dto.RestaurantResponse;
 import org.example.team2backend.entity.Like;
 import org.example.team2backend.entity.Restaurant;
 import org.example.team2backend.entity.User;
+import org.example.team2backend.enums.University;
 import org.example.team2backend.repository.LikeRepository;
 import org.example.team2backend.repository.RestaurantRepository;
 import org.example.team2backend.repository.UserRepository;
@@ -12,7 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -111,47 +112,17 @@ public class RestaurantService {
         long totalLikeCount =
                 likeRepository.countByRestaurant(restaurant);
 
-        Map<String, Long> schoolLikes = new HashMap<>();
+        Map<String, Long> schoolLikes = new LinkedHashMap<>();
 
-        schoolLikes.put(
-                "SOGANG",
-                likeRepository.countByRestaurantAndUserSchool(
-                        restaurant,
-                        "SOGANG"
-                )
-        );
-
-        schoolLikes.put(
-                "YONSEI",
-                likeRepository.countByRestaurantAndUserSchool(
-                        restaurant,
-                        "YONSEI"
-                )
-        );
-
-        schoolLikes.put(
-                "EWHA",
-                likeRepository.countByRestaurantAndUserSchool(
-                        restaurant,
-                        "EWHA"
-                )
-        );
-
-        schoolLikes.put(
-                "HONGIK",
-                likeRepository.countByRestaurantAndUserSchool(
-                        restaurant,
-                        "HONGIK"
-                )
-        );
-
-        schoolLikes.put(
-                "MYONGJI",
-                likeRepository.countByRestaurantAndUserSchool(
-                        restaurant,
-                        "MYONGJI"
-                )
-        );
+        for (University university : University.values()) {
+            schoolLikes.put(
+                    university.name(),
+                    likeRepository.countByRestaurantAndUserSchool(
+                            restaurant,
+                            university.name()
+                    )
+            );
+        }
 
         return new RestaurantResponse(
                 restaurant,
