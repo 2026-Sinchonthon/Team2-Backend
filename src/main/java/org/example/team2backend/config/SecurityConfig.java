@@ -29,7 +29,7 @@ public class SecurityConfig {
     private final CorsConfigurationSource corsConfigurationSource;
 
     // 인증 없이 접근 가능한 경로.
-    // 맛집 조회(GET)는 비로그인도 허용하고, 등록/수정/좋아요는 로그인이 필요합니다.
+    // 맛집 조회(GET)는 비로그인도 허용하고, 등록/수정/완료는 로그인이 필요합니다.
     private static final String[] PUBLIC_ENDPOINTS = {
             "/api/auth/**",
             "/actuator/health",

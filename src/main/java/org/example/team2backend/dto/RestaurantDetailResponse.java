@@ -29,22 +29,22 @@ public class RestaurantDetailResponse {
 
     private final List<RestaurantTagType> tags;
 
-    private final long likeCount;
+    private final long checkCount;
 
-    /** 학교별 좋아요 수. 좋아요가 없는 학교도 0으로 포함됩니다. */
-    private final Map<String, Long> likeCountByUniversity;
+    /** 학교별 완료 수. 완료가 없는 학교도 0으로 포함됩니다. */
+    private final Map<String, Long> checkCountByUniversity;
 
-    /** 현재 사용자의 좋아요 여부. userId를 넘기지 않으면 false입니다. */
-    private final boolean liked;
+    /** 현재 사용자의 완료 여부. userId를 넘기지 않으면 false입니다. */
+    private final boolean checked;
 
     private final LocalDateTime createdAt;
 
     public RestaurantDetailResponse(
             Restaurant restaurant,
             List<RestaurantTagType> tags,
-            long likeCount,
-            Map<String, Long> likeCountByUniversity,
-            boolean liked
+            long checkCount,
+            Map<String, Long> checkCountByUniversity,
+            boolean checked
     ) {
         this.restaurantId = restaurant.getId();
         this.name = restaurant.getName();
@@ -53,9 +53,9 @@ public class RestaurantDetailResponse {
         this.longitude = restaurant.getLongitude();
         this.description = restaurant.getDescription();
         this.tags = tags;
-        this.likeCount = likeCount;
-        this.likeCountByUniversity = likeCountByUniversity;
-        this.liked = liked;
+        this.checkCount = checkCount;
+        this.checkCountByUniversity = checkCountByUniversity;
+        this.checked = checked;
         this.createdAt = restaurant.getCreatedAt();
     }
 }

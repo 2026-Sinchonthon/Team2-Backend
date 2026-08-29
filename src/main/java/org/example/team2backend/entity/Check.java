@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Getter
 @NoArgsConstructor
 @Table(
-        name = "restaurant_likes",
+        name = "restaurant_checks",
         uniqueConstraints = {
                 @UniqueConstraint(
                         name = "uk_user_restaurant",
@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
                 )
         }
 )
-public class Like {
+public class Check {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -37,7 +37,7 @@ public class Like {
     @Column(updatable = false)
     private LocalDateTime createdAt;
 
-    public Like(User user, Restaurant restaurant) {
+    public Check(User user, Restaurant restaurant) {
         this.user = user;
         this.restaurant = restaurant;
     }
