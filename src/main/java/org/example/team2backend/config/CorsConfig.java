@@ -23,7 +23,10 @@ public class CorsConfig {
         configuration.setAllowedOriginPatterns(allowedOrigins);
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
-        configuration.setAllowCredentials(false);
+        // 프론트가 axios withCredentials: true로 호출하므로 켜야 프리플라이트를 통과합니다.
+        // JWT는 쿠키가 아니라 Authorization 헤더로 주고받으므로 세션 쿠키 노출 같은
+        // 새로운 위험은 없습니다.
+        configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
