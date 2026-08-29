@@ -1,6 +1,6 @@
-# Getting Started
+# 촌놈들(Team_02)
 
-### Reference Documentation
+### 신촌을 더 ( )하게 만드는 서비스
 
 For further reference, please consider the following sections:
 
