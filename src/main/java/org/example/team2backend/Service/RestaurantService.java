@@ -23,20 +23,36 @@ import java.util.Map;
 @Transactional
 public class RestaurantService {
 
+    /**
+     * 전체 보기에서 맛집으로 노출되기 위한 최소 좋아요 수.
+     */
+    private static final long MIN_TOTAL_LIKE_COUNT = 10;
+
+    /**
+     * 학교별 보기에서 노출되기 위한 해당 학교 최소 좋아요 수.
+     */
+    private static final long MIN_UNIVERSITY_LIKE_COUNT = 1;
+
     private final RestaurantRepository restaurantRepository;
     private final LikeRepository likeRepository;
     private final UserRepository userRepository;
 
+    /**
+     * 맛집 목록을 조회합니다.
+     *
+     * <p>university가 없으면 전체 좋아요 {@value #MIN_TOTAL_LIKE_COUNT}개 이상인 맛집을
+     * 전체 좋아요 순으로, 있으면 해당 학교 좋아요가 있는 맛집을 그 학교 좋아요 순으로
+     * 반환합니다. 필터와 정렬은 모두 DB에서 처리합니다.
+     */
     @Transactional(readOnly = true)
-    public List<RestaurantResponse> getRestaurants(String category) {
+    public List<RestaurantResponse> getRestaurants(University university) {
 
-        List<Restaurant> restaurants;
-
-        if (category == null || category.isBlank()) {
-            restaurants = restaurantRepository.findAll();
-        } else {
-            restaurants = restaurantRepository.findByCategory(category);
-        }
+        List<Restaurant> restaurants = (university == null)
+                ? restaurantRepository.findPopular(MIN_TOTAL_LIKE_COUNT)
+                : restaurantRepository.findPopularBySchool(
+                        university.name(),
+                        MIN_UNIVERSITY_LIKE_COUNT
+                );
 
         if (restaurants.isEmpty()) {
             return List.of();
