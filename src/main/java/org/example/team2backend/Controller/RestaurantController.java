@@ -8,12 +8,10 @@ import org.example.team2backend.dto.RestaurantResponse;
 import org.example.team2backend.dto.RestaurantTagUpdateRequest;
 import org.example.team2backend.dto.RestaurantTagUpdateResponse;
 import org.example.team2backend.enums.University;
+import org.example.team2backend.response.ApiResponse;
 import org.example.team2backend.service.RestaurantService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/restaurants")
@@ -32,7 +30,7 @@ public class RestaurantController {
      * GET /api/restaurants?university=SOGANG
      */
     @GetMapping
-    public ResponseEntity<RestaurantListResponse> getRestaurants(
+    public ApiResponse<RestaurantListResponse> getRestaurants(
             @RequestParam(required = false) String university
     ) {
         University filter = null;
@@ -45,7 +43,7 @@ public class RestaurantController {
                     ));
         }
 
-        return ResponseEntity.ok(
+        return ApiResponse.success(
                 restaurantService.getRestaurants(filter)
         );
     }
@@ -60,11 +58,11 @@ public class RestaurantController {
      * ※ 로그인/JWT 연결 전 임시 방식
      */
     @GetMapping("/{restaurantId}")
-    public ResponseEntity<RestaurantDetailResponse> getRestaurantDetail(
+    public ApiResponse<RestaurantDetailResponse> getRestaurantDetail(
             @PathVariable Long restaurantId,
             @RequestParam(required = false) Long userId
     ) {
-        return ResponseEntity.ok(
+        return ApiResponse.success(
                 restaurantService.getRestaurantDetail(restaurantId, userId)
         );
     }
@@ -76,10 +74,10 @@ public class RestaurantController {
      * POST /api/restaurants
      */
     @PostMapping
-    public ResponseEntity<RestaurantResponse> createRestaurant(
+    public ApiResponse<RestaurantResponse> createRestaurant(
             @RequestBody RestaurantRequest request
     ) {
-        return ResponseEntity.ok(
+        return ApiResponse.success(
                 restaurantService.createOrGetRestaurant(request)
         );
     }
@@ -93,11 +91,11 @@ public class RestaurantController {
      * 빈 배열을 보내면 태그가 모두 삭제됩니다.
      */
     @PatchMapping("/{restaurantId}")
-    public ResponseEntity<RestaurantTagUpdateResponse> updateTags(
+    public ApiResponse<RestaurantTagUpdateResponse> updateTags(
             @PathVariable Long restaurantId,
             @RequestBody RestaurantTagUpdateRequest request
     ) {
-        return ResponseEntity.ok(
+        return ApiResponse.success(
                 restaurantService.updateTags(restaurantId, request)
         );
     }
@@ -110,11 +108,11 @@ public class RestaurantController {
      * ※ 로그인/JWT 연결 전 임시 방식
      */
     @PostMapping("/{restaurantId}/likes")
-    public ResponseEntity<LikeResponse> addLike(
+    public ApiResponse<LikeResponse> addLike(
             @PathVariable Long restaurantId,
             @RequestParam Long userId
     ) {
-        return ResponseEntity.ok(
+        return ApiResponse.success(
                 restaurantService.addLike(restaurantId, userId)
         );
     }
@@ -125,11 +123,11 @@ public class RestaurantController {
      * DELETE /api/restaurants/{restaurantId}/likes?userId=1
      */
     @DeleteMapping("/{restaurantId}/likes")
-    public ResponseEntity<LikeResponse> removeLike(
+    public ApiResponse<LikeResponse> removeLike(
             @PathVariable Long restaurantId,
             @RequestParam Long userId
     ) {
-        return ResponseEntity.ok(
+        return ApiResponse.success(
                 restaurantService.removeLike(restaurantId, userId)
         );
     }

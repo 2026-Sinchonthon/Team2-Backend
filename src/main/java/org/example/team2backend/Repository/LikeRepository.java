@@ -22,13 +22,6 @@ public interface LikeRepository extends JpaRepository<Like, Long> {
             Restaurant restaurant
     );
 
-    long countByRestaurant(Restaurant restaurant);
-
-    long countByRestaurantAndUserSchool(
-            Restaurant restaurant,
-            String school
-    );
-
     /**
      * 여러 맛집의 전체 좋아요 수를 한 번에 조회합니다.
      *
