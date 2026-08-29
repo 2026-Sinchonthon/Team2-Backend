@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,9 +38,79 @@ public class RestaurantService {
             restaurants = restaurantRepository.findByCategory(category);
         }
 
-        return restaurants.stream()
-                .map(this::toResponse)
+        if (restaurants.isEmpty()) {
+            return List.of();
+        }
+
+        // 맛집마다 카운트 쿼리를 날리지 않도록 좋아요 집계를 한 번에 읽어옵니다.
+        List<Long> restaurantIds = restaurants.stream()
+                .map(Restaurant::getId)
                 .toList();
+
+        Map<Long, Long> totalLikes = loadTotalLikes(restaurantIds);
+        Map<Long, Map<String, Long>> schoolLikes = loadSchoolLikes(restaurantIds);
+
+        return restaurants.stream()
+                .map(restaurant -> new RestaurantResponse(
+                        restaurant,
+                        totalLikes.getOrDefault(restaurant.getId(), 0L),
+                        schoolLikes.getOrDefault(
+                                restaurant.getId(),
+                                emptySchoolLikes()
+                        )
+                ))
+                .toList();
+    }
+
+    /**
+     * 맛집별 전체 좋아요 수. 좋아요가 없는 맛집은 결과에 없으므로 호출부에서 0으로 채웁니다.
+     */
+    private Map<Long, Long> loadTotalLikes(List<Long> restaurantIds) {
+
+        Map<Long, Long> totalLikes = new HashMap<>();
+
+        for (Object[] row : likeRepository.countTotalByRestaurantIds(restaurantIds)) {
+            totalLikes.put((Long) row[0], (Long) row[1]);
+        }
+
+        return totalLikes;
+    }
+
+    /**
+     * 맛집별 · 학교별 좋아요 수. 좋아요가 없는 학교도 0으로 채워 항상 전체 학교를 반환합니다.
+     */
+    private Map<Long, Map<String, Long>> loadSchoolLikes(List<Long> restaurantIds) {
+
+        Map<Long, Map<String, Long>> schoolLikes = new HashMap<>();
+
+        for (Object[] row : likeRepository.countBySchoolForRestaurantIds(restaurantIds)) {
+            Long restaurantId = (Long) row[0];
+            String school = (String) row[1];
+            Long count = (Long) row[2];
+
+            Map<String, Long> counts = schoolLikes.computeIfAbsent(
+                    restaurantId,
+                    id -> emptySchoolLikes()
+            );
+
+            // User.school은 자유 문자열이라 University에 없는 값이 들어올 수 있습니다.
+            // 그런 값은 집계에서 제외해 응답 형태를 학교 Enum으로 고정합니다.
+            University.from(school)
+                    .ifPresent(university -> counts.put(university.name(), count));
+        }
+
+        return schoolLikes;
+    }
+
+    private Map<String, Long> emptySchoolLikes() {
+
+        Map<String, Long> counts = new LinkedHashMap<>();
+
+        for (University university : University.values()) {
+            counts.put(university.name(), 0L);
+        }
+
+        return counts;
     }
 
     public RestaurantResponse createOrGetRestaurant(
@@ -107,27 +178,21 @@ public class RestaurantService {
         likeRepository.delete(like);
     }
 
+    /**
+     * 맛집 한 건에 대한 응답. 집계 쿼리는 목록과 동일한 것을 재사용해
+     * 학교별 좋아요 맵의 형태(항상 전체 학교 포함)를 목록 응답과 맞춥니다.
+     */
     private RestaurantResponse toResponse(Restaurant restaurant) {
 
-        long totalLikeCount =
-                likeRepository.countByRestaurant(restaurant);
-
-        Map<String, Long> schoolLikes = new LinkedHashMap<>();
-
-        for (University university : University.values()) {
-            schoolLikes.put(
-                    university.name(),
-                    likeRepository.countByRestaurantAndUserSchool(
-                            restaurant,
-                            university.name()
-                    )
-            );
-        }
+        List<Long> ids = List.of(restaurant.getId());
 
         return new RestaurantResponse(
                 restaurant,
-                totalLikeCount,
-                schoolLikes
+                loadTotalLikes(ids).getOrDefault(restaurant.getId(), 0L),
+                loadSchoolLikes(ids).getOrDefault(
+                        restaurant.getId(),
+                        emptySchoolLikes()
+                )
         );
     }
 }
