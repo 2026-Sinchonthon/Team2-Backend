@@ -4,6 +4,8 @@ import org.example.team2backend.dto.RestaurantDetailResponse;
 import org.example.team2backend.dto.RestaurantListResponse;
 import org.example.team2backend.dto.RestaurantRequest;
 import org.example.team2backend.dto.RestaurantResponse;
+import org.example.team2backend.dto.RestaurantTagUpdateRequest;
+import org.example.team2backend.dto.RestaurantTagUpdateResponse;
 import org.example.team2backend.enums.University;
 import org.example.team2backend.service.RestaurantService;
 import lombok.RequiredArgsConstructor;
@@ -78,6 +80,24 @@ public class RestaurantController {
     ) {
         return ResponseEntity.ok(
                 restaurantService.createOrGetRestaurant(request)
+        );
+    }
+
+    /**
+     * 맛집 태그 수정
+     *
+     * PATCH /api/restaurants/{restaurantId}
+     *
+     * 부분 추가가 아니라 전체 교체입니다.
+     * 빈 배열을 보내면 태그가 모두 삭제됩니다.
+     */
+    @PatchMapping("/{restaurantId}")
+    public ResponseEntity<RestaurantTagUpdateResponse> updateTags(
+            @PathVariable Long restaurantId,
+            @RequestBody RestaurantTagUpdateRequest request
+    ) {
+        return ResponseEntity.ok(
+                restaurantService.updateTags(restaurantId, request)
         );
     }
 

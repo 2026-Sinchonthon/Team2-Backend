@@ -5,6 +5,8 @@ import org.example.team2backend.dto.RestaurantListItem;
 import org.example.team2backend.dto.RestaurantListResponse;
 import org.example.team2backend.dto.RestaurantRequest;
 import org.example.team2backend.dto.RestaurantResponse;
+import org.example.team2backend.dto.RestaurantTagUpdateRequest;
+import org.example.team2backend.dto.RestaurantTagUpdateResponse;
 import org.example.team2backend.entity.Like;
 import org.example.team2backend.entity.Restaurant;
 import org.example.team2backend.entity.RestaurantTag;
@@ -23,6 +25,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -200,6 +203,44 @@ public class RestaurantService {
                         emptySchoolLikes()
                 ),
                 liked
+        );
+    }
+
+    /**
+     * 맛집의 태그를 교체합니다. 기존 태그를 모두 지우고 요청받은 태그로 새로 넣습니다.
+     *
+     * <p>중복 태그는 (restaurant_id, tag_name) UNIQUE 제약에 걸리므로 미리 걸러내고,
+     * 앞뒤 공백은 제거합니다. 빈 문자열은 태그로 저장하지 않습니다.
+     */
+    public RestaurantTagUpdateResponse updateTags(
+            Long restaurantId,
+            RestaurantTagUpdateRequest request
+    ) {
+        Restaurant restaurant = findRestaurant(restaurantId);
+
+        List<String> tags = (request.getTags() == null)
+                ? List.of()
+                : request.getTags().stream()
+                        .filter(Objects::nonNull)
+                        .map(String::trim)
+                        .filter(tag -> !tag.isEmpty())
+                        .distinct()
+                        .toList();
+
+        // 기존 태그를 먼저 지우고 새로 넣습니다. 같은 트랜잭션 안에서 delete가
+        // insert보다 늦게 나가면 UNIQUE 제약에 걸리므로 flush로 순서를 보장합니다.
+        restaurantTagRepository.deleteByRestaurant(restaurant);
+        restaurantTagRepository.flush();
+
+        List<RestaurantTag> saved = restaurantTagRepository.saveAll(
+                tags.stream()
+                        .map(tag -> new RestaurantTag(restaurant, tag))
+                        .toList()
+        );
+
+        return new RestaurantTagUpdateResponse(
+                restaurant.getId(),
+                saved.stream().map(RestaurantTag::getTagName).toList()
         );
     }
 
