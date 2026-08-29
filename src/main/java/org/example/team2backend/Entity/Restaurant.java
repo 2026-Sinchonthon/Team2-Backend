@@ -30,8 +30,6 @@ public class Restaurant {
 
     private Double longitude;
 
-    private String category;
-
     // 맛집 상세 화면에 노출되는 설명
     @Column(length = 1000)
     private String description;
@@ -48,15 +46,13 @@ public class Restaurant {
             String name,
             String address,
             Double latitude,
-            Double longitude,
-            String category
+            Double longitude
     ) {
         this.kakaoPlaceId = kakaoPlaceId;
         this.name = name;
         this.address = address;
         this.latitude = latitude;
         this.longitude = longitude;
-        this.category = category;
     }
 
     public void updateDescription(String description) {

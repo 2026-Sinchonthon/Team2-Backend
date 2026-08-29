@@ -20,8 +20,6 @@ public class RestaurantResponse {
 
     private Double longitude;
 
-    private String category;
-
     private long totalLikeCount;
 
     private Map<String, Long> schoolLikes;
@@ -37,7 +35,6 @@ public class RestaurantResponse {
         this.address = restaurant.getAddress();
         this.latitude = restaurant.getLatitude();
         this.longitude = restaurant.getLongitude();
-        this.category = restaurant.getCategory();
         this.totalLikeCount = totalLikeCount;
         this.schoolLikes = schoolLikes;
     }

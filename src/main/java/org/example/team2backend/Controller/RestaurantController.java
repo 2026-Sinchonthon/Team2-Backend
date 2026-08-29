@@ -1,5 +1,6 @@
 package org.example.team2backend.controller;
 
+import org.example.team2backend.dto.RestaurantListResponse;
 import org.example.team2backend.dto.RestaurantRequest;
 import org.example.team2backend.dto.RestaurantResponse;
 import org.example.team2backend.enums.University;
@@ -27,7 +28,7 @@ public class RestaurantController {
      * GET /api/restaurants?university=SOGANG
      */
     @GetMapping
-    public ResponseEntity<List<RestaurantResponse>> getRestaurants(
+    public ResponseEntity<RestaurantListResponse> getRestaurants(
             @RequestParam(required = false) String university
     ) {
         University filter = null;

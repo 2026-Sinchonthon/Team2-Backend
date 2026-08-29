@@ -16,6 +16,4 @@ public class RestaurantRequest {
     private Double latitude;
 
     private Double longitude;
-
-    private String category;
 }

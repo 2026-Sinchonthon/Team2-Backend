@@ -1,5 +1,7 @@
 package org.example.team2backend.service;
 
+import org.example.team2backend.dto.RestaurantListItem;
+import org.example.team2backend.dto.RestaurantListResponse;
 import org.example.team2backend.dto.RestaurantRequest;
 import org.example.team2backend.dto.RestaurantResponse;
 import org.example.team2backend.entity.Like;
@@ -28,11 +30,6 @@ public class RestaurantService {
      */
     private static final long MIN_TOTAL_LIKE_COUNT = 10;
 
-    /**
-     * 학교별 보기에서 노출되기 위한 해당 학교 최소 좋아요 수.
-     */
-    private static final long MIN_UNIVERSITY_LIKE_COUNT = 1;
-
     private final RestaurantRepository restaurantRepository;
     private final LikeRepository likeRepository;
     private final UserRepository userRepository;
@@ -40,22 +37,24 @@ public class RestaurantService {
     /**
      * 맛집 목록을 조회합니다.
      *
-     * <p>university가 없으면 전체 좋아요 {@value #MIN_TOTAL_LIKE_COUNT}개 이상인 맛집을
-     * 전체 좋아요 순으로, 있으면 해당 학교 좋아요가 있는 맛집을 그 학교 좋아요 순으로
-     * 반환합니다. 필터와 정렬은 모두 DB에서 처리합니다.
+     * <p>어느 쪽이든 전체 좋아요 {@value #MIN_TOTAL_LIKE_COUNT}개 이상이 전제입니다.
+     * university가 없으면 전체 좋아요 순으로, 있으면 그 학교가 학교별 좋아요 1위인
+     * 맛집만 해당 학교 좋아요 순으로 반환합니다. 필터와 정렬은 모두 DB에서 처리합니다.
      */
     @Transactional(readOnly = true)
-    public List<RestaurantResponse> getRestaurants(University university) {
+    public RestaurantListResponse getRestaurants(University university) {
 
         List<Restaurant> restaurants = (university == null)
                 ? restaurantRepository.findPopular(MIN_TOTAL_LIKE_COUNT)
-                : restaurantRepository.findPopularBySchool(
+                : restaurantRepository.findTopRankedBySchool(
                         university.name(),
-                        MIN_UNIVERSITY_LIKE_COUNT
+                        MIN_TOTAL_LIKE_COUNT
                 );
 
         if (restaurants.isEmpty()) {
-            return List.of();
+            return (university == null)
+                    ? RestaurantListResponse.of(List.of())
+                    : RestaurantListResponse.ofUniversity(university, List.of());
         }
 
         // 맛집마다 카운트 쿼리를 날리지 않도록 좋아요 집계를 한 번에 읽어옵니다.
@@ -64,18 +63,31 @@ public class RestaurantService {
                 .toList();
 
         Map<Long, Long> totalLikes = loadTotalLikes(restaurantIds);
+
+        if (university == null) {
+            List<RestaurantListItem> items = restaurants.stream()
+                    .map(restaurant -> RestaurantListItem.of(
+                            restaurant,
+                            totalLikes.getOrDefault(restaurant.getId(), 0L)
+                    ))
+                    .toList();
+
+            return RestaurantListResponse.of(items);
+        }
+
         Map<Long, Map<String, Long>> schoolLikes = loadSchoolLikes(restaurantIds);
 
-        return restaurants.stream()
-                .map(restaurant -> new RestaurantResponse(
+        List<RestaurantListItem> items = restaurants.stream()
+                .map(restaurant -> RestaurantListItem.ofUniversity(
                         restaurant,
                         totalLikes.getOrDefault(restaurant.getId(), 0L),
-                        schoolLikes.getOrDefault(
-                                restaurant.getId(),
-                                emptySchoolLikes()
-                        )
+                        schoolLikes
+                                .getOrDefault(restaurant.getId(), emptySchoolLikes())
+                                .getOrDefault(university.name(), 0L)
                 ))
                 .toList();
+
+        return RestaurantListResponse.ofUniversity(university, items);
     }
 
     /**
@@ -143,8 +155,7 @@ public class RestaurantService {
                                                 request.getName(),
                                                 request.getAddress(),
                                                 request.getLatitude(),
-                                                request.getLongitude(),
-                                                request.getCategory()
+                                                request.getLongitude()
                                         )
                                 )
                         );
