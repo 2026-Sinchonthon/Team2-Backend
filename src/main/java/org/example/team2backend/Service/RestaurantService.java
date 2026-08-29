@@ -209,7 +209,7 @@ public class RestaurantService {
     /**
      * 맛집의 태그를 교체합니다. 기존 태그를 모두 지우고 요청받은 태그로 새로 넣습니다.
      *
-     * <p>태그는 {@link RestaurantTagType} 세 가지로 고정되어 있고, 요청 역직렬화
+     * <p>태그는 {@link RestaurantTagType} 다섯 가지로 고정되어 있고, 요청 역직렬화
      * 단계에서 이미 검증되었습니다. 여기서는 중복만 제거합니다
      * (restaurant_id, tag_name) UNIQUE 제약에 걸리지 않도록).
      */
